@@ -551,6 +551,45 @@ function fetchCreativeImages() {
         return fetch(cUrl)
           .then(function(r) { return r.json(); })
           .then(function(creative) {
+            /* === DEBUG: Visual Truth Alignment === */
+            var spec = creative.object_story_spec || {};
+            var ld = spec.link_data || null;
+            var vd = spec.video_data || null;
+            console.group('🔍 Creative Debug: ' + ad.name + ' (ad ' + ad.id + ')');
+            console.log('Full creative JSON:', JSON.parse(JSON.stringify(creative)));
+            console.log('Top-level image_url:', creative.image_url || '(none)');
+            console.log('Top-level image_hash:', creative.image_hash || '(none)');
+            console.log('Top-level thumbnail_url:', creative.thumbnail_url || '(none)');
+            console.log('object_type:', creative.object_type || '(none)');
+            if (ld) {
+              console.log('--- link_data ---');
+              console.log('  link_data.picture:', ld.picture || '(none)');
+              console.log('  link_data.image_hash:', ld.image_hash || '(none)');
+              console.log('  link_data.image_url:', ld.image_url || '(none)');
+              if (ld.child_attachments) {
+                console.log('  link_data.child_attachments:', ld.child_attachments.length, 'items');
+                ld.child_attachments.forEach(function(c, i) {
+                  console.log('    child[' + i + '] picture:', c.picture || '(none)', 'hash:', c.image_hash || '(none)');
+                });
+              }
+            }
+            if (vd) {
+              console.log('--- video_data ---');
+              console.log('  video_data.image_url:', vd.image_url || '(none)');
+              console.log('  video_data.image_hash:', vd.image_hash || '(none)');
+              console.log('  video_data.video_id:', vd.video_id || '(none)');
+            }
+            if (spec.photo_data) {
+              console.log('--- photo_data ---');
+              console.log('  photo_data.image_hash:', spec.photo_data.image_hash || '(none)');
+            }
+            if (spec.template_data) {
+              console.log('--- template_data (dynamic) ---');
+              console.log('  template_data:', JSON.parse(JSON.stringify(spec.template_data)));
+            }
+            console.groupEnd();
+            /* === END DEBUG === */
+
             var assets = normalizeCreativeAssets(creative);
             ad.creativeType  = assets.creativeType;
             ad.carouselCount = assets.carouselCount;
@@ -561,6 +600,10 @@ function fetchCreativeImages() {
             ad.visuals.thumbnailUrl      = assets.thumbnailUrl;
             ad.visuals.videoThumbnailUrl = assets.videoThumbnailUrl;
             ad.visuals.carouselFirstImage = assets.carouselFirstImage;
+
+            /* DEBUG: Log what resolveCardImage will pick */
+            var wouldPick = resolveCardImage(ad);
+            console.log('📸 Card would show:', wouldPick.source, '→', wouldPick.url ? wouldPick.url.substring(0, 80) + '...' : '(empty)');
           })
           .catch(function() {
             ad.creativeType = 'unknown';
@@ -621,11 +664,17 @@ function fetchPermalinkImages() {
    ============================================ */
 
 function resolveAllCardImages() {
+  console.group('🎯 Final Card Image Resolution (after permalink fetch)');
   adsData.forEach(function(ad) {
     var resolved = resolveCardImage(ad);
     ad.visuals.cardImageUrl    = resolved.url;
     ad.visuals.cardImageSource = resolved.source;
+    console.log(ad.name, '| type:', ad.creativeType, '| source:', resolved.source,
+      '| hash:', ad.visuals.imageHash || '(none)',
+      '| permalink:', ad.visuals.permalinkUrl ? 'YES' : 'NO',
+      '| url:', resolved.url ? resolved.url.substring(0, 60) + '...' : '(empty)');
   });
+  console.groupEnd();
 }
 
 /* ============================================
