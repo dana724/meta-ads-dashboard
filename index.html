@@ -584,16 +584,17 @@ function fetchData() {
       if (adsData.length > 0) return fetchStableImages();
     })
     .then(function() {
-      /* Step 3: fetch ad preview HTML and extract main images */
       if (adsData.length > 0) {
-        /* Render with asset images first so user sees something immediately */
+        /* Progressive render: show cards immediately with stable/asset fallback */
+        resolveCardImages();
         applySort();
-        /* Then upgrade card images with preview images in background */
+        /* Then fetch previews and upgrade card images */
         return fetchPreviewImages();
       }
     })
     .then(function() {
       if (adsData.length > 0) {
+        /* Re-resolve with preview images now available, then re-render */
         resolveCardImages();
         renderCards();
         renderTable();
@@ -659,14 +660,14 @@ function fetchCreativeImages() {
           .then(function(r) { return r.json(); })
           .then(function(creative) {
             var img = getCreativeImage(creative);
-            ad.thumbnail = img.src || '';
+            ad.assetImageUrl = img.src || '';
             ad.creativeType = img.type;
             ad.carouselCount = img.count || 0;
             ad.objectType = creative.object_type || '';
             ad.imageHash = extractImageHash(creative);
           })
           .catch(function() {
-            ad.thumbnail = '';
+            ad.assetImageUrl = '';
             ad.creativeType = 'unknown';
             ad.carouselCount = 0;
           });
@@ -707,7 +708,7 @@ function fetchStableImages() {
       });
       adsData.forEach(function(ad) {
         if (ad.imageHash && map[ad.imageHash]) {
-          ad.stableImageUrl = map[ad.imageHash];
+          ad.stableAssetImageUrl = map[ad.imageHash];
         }
       });
     })
@@ -740,10 +741,26 @@ function tryPreviewFormats(ad, formats, index) {
     .then(function(r) { return r.json(); })
     .then(function(json) {
       if (json.data && json.data[0] && json.data[0].body) {
-        ad.previewHtml = json.data[0].body;
-        ad.previewFormat = fmt;
-        return;
+        var body = json.data[0].body;
+        /* Always store the first valid preview HTML for modal use */
+        if (!ad.previewHtml) {
+          ad.previewHtml = body;
+          ad.previewFormat = fmt;
+        }
+        /* Try to extract the main image from the rendered preview */
+        return extractPrimaryImageFromRenderedPreview(body)
+          .then(function(extracted) {
+            if (extracted) {
+              ad.previewImageUrl = extracted;
+              ad.previewHtml = body;
+              ad.previewFormat = fmt;
+              return; /* success — stop trying other formats */
+            }
+            /* Image extraction failed for this format — try next */
+            return tryPreviewFormats(ad, formats, index + 1);
+          });
       }
+      /* No preview data for this format — try next */
       return tryPreviewFormats(ad, formats, index + 1);
     })
     .catch(function() {
@@ -757,11 +774,18 @@ function tryPreviewFormats(ad, formats, index) {
 
 function resolveCardImages() {
   adsData.forEach(function(ad) {
-    if (ad.stableImageUrl) {
-      ad.thumbnail = ad.stableImageUrl;
-      ad.imageSource = 'stable';
+    if (ad.previewImageUrl) {
+      ad.finalCardImageUrl = ad.previewImageUrl;
+      ad.finalImageSource = 'preview';
+    } else if (ad.stableAssetImageUrl) {
+      ad.finalCardImageUrl = ad.stableAssetImageUrl;
+      ad.finalImageSource = 'stable';
+    } else if (ad.assetImageUrl) {
+      ad.finalCardImageUrl = ad.assetImageUrl;
+      ad.finalImageSource = 'asset';
     } else {
-      ad.imageSource = ad.thumbnail ? 'asset' : 'none';
+      ad.finalCardImageUrl = '';
+      ad.finalImageSource = 'none';
     }
   });
 }
@@ -815,16 +839,18 @@ function parseAd(raw) {
     roas: roas,
     status: status,
     creativeId: '',
-    thumbnail: '',
     creativeType: 'unknown',
     carouselCount: 0,
     objectType: '',
-    previewImage: '',
-    previewHtml: '',
-    previewFormat: '',
-    imageSource: 'asset',
     imageHash: '',
-    stableImageUrl: ''
+    /* --- Explicit image fields --- */
+    assetImageUrl: '',        /* from creative thumbnail_url / image_url / carousel */
+    stableAssetImageUrl: '',  /* from adimages permalink_url (never expires) */
+    previewHtml: '',          /* raw Meta ad preview HTML for modal iframe */
+    previewFormat: '',        /* which format worked (DESKTOP/MOBILE/INSTAGRAM) */
+    previewImageUrl: '',      /* extracted main image from rendered preview */
+    finalCardImageUrl: '',    /* resolved best image for card display */
+    finalImageSource: 'none'  /* preview / stable / asset / none */
   };
 }
 
@@ -885,17 +911,19 @@ function renderCards() {
   var html = '';
   adsData.forEach(function(ad, i) {
     var sb = statusBadge(ad.status);
-    var thumbHtml = ad.thumbnail
-      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
+    var thumbHtml = ad.finalCardImageUrl
+      ? '<img src="' + escAttr(ad.finalCardImageUrl) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
       : '🖼️';
     var carouselBadge = '';
     if (ad.creativeType === 'carousel' && ad.carouselCount > 0) {
       carouselBadge = '<div class="badge-carousel">🎠 x' + ad.carouselCount + '</div>';
     }
     var sourceBadge = '';
-    if (ad.imageSource === 'stable') {
+    if (ad.finalImageSource === 'preview') {
+      sourceBadge = '<div class="badge-source badge-source-preview">PREVIEW</div>';
+    } else if (ad.finalImageSource === 'stable') {
       sourceBadge = '<div class="badge-source badge-source-preview">STABLE</div>';
-    } else if (ad.imageSource === 'asset') {
+    } else if (ad.finalImageSource === 'asset') {
       sourceBadge = '<div class="badge-source badge-source-asset">ASSET</div>';
     }
     html += '<div class="ad-card" onclick="openModal(' + i + ')">'
@@ -934,17 +962,19 @@ function renderTable() {
 
   adsData.forEach(function(ad, i) {
     var sb = statusBadge(ad.status);
-    var thumbHtml = ad.thumbnail
-      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
+    var thumbHtml = ad.finalCardImageUrl
+      ? '<img src="' + escAttr(ad.finalCardImageUrl) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
       : '🖼️';
     var miniCarousel = '';
     if (ad.creativeType === 'carousel' && ad.carouselCount > 0) {
       miniCarousel = '<span class="carousel-mini">🎠' + ad.carouselCount + '</span>';
     }
     var miniSource = '';
-    if (ad.imageSource === 'stable') {
+    if (ad.finalImageSource === 'preview') {
+      miniSource = '<span class="source-mini source-mini-preview">PV</span>';
+    } else if (ad.finalImageSource === 'stable') {
       miniSource = '<span class="source-mini source-mini-preview">ST</span>';
-    } else if (ad.imageSource === 'asset') {
+    } else if (ad.finalImageSource === 'asset') {
       miniSource = '<span class="source-mini source-mini-asset">AS</span>';
     }
     var typeLabel = ad.creativeType === 'carousel'
@@ -991,8 +1021,8 @@ function openModal(index) {
   var ad = adsData[index];
   if (!ad) return;
 
-  var imgHtml = ad.thumbnail
-    ? '<img class="modal-img" src="' + escAttr(ad.thumbnail) + '" alt="" onerror="this.style.display=\'none\'">'
+  var imgHtml = ad.finalCardImageUrl
+    ? '<img class="modal-img" src="' + escAttr(ad.finalCardImageUrl) + '" alt="" onerror="this.style.display=\'none\'">'
     : '';
 
   var typeTag = '';
