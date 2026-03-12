@@ -356,182 +356,7 @@ function getCreativeImage(creative) {
 }
 
 /* ============================================
-   3b. EXTRACT PRIMARY IMAGE FROM RENDERED PREVIEW
-   ============================================ */
-
-function delay(ms) {
-  return new Promise(function(resolve) { setTimeout(resolve, ms); });
-}
-
-function unwrapSafeImage(src) {
-  if (!src) return src;
-  try {
-    if (src.toLowerCase().indexOf('safe_image.php') !== -1) {
-      var u = new URL(src);
-      var real = u.searchParams.get('url');
-      if (real) return decodeURIComponent(real);
-    }
-  } catch(e) {}
-  return src;
-}
-
-function isRejectUrl(src) {
-  if (!src) return true;
-  var s = src.toLowerCase();
-  if (s.indexOf('data:') === 0) return true;
-  if (s.indexOf('/rsrc.php') !== -1) return true;
-  if (s.indexOf('emoji') !== -1) return true;
-  if (s.indexOf('/images/reactions/') !== -1) return true;
-  if (s.indexOf('/p16x16/') !== -1) return true;
-  if (s.indexOf('/p32x32/') !== -1) return true;
-  if (s.indexOf('/p50x50/') !== -1) return true;
-  if (s.indexOf('tracking') !== -1) return true;
-  if (s.indexOf('pixel') !== -1) return true;
-  if (s.indexOf('beacon') !== -1) return true;
-  if (s.indexOf('spacer') !== -1) return true;
-  return false;
-}
-
-async function extractPrimaryImageFromRenderedPreview(previewHtml) {
-  if (!previewHtml) return null;
-  try {
-    var iframe = document.createElement('iframe');
-    iframe.setAttribute('style',
-      'position:fixed;left:-99999px;top:0;width:500px;height:900px;opacity:0;pointer-events:none;');
-    iframe.srcdoc = previewHtml;
-    document.body.appendChild(iframe);
-
-    /* Wait for iframe to load */
-    await new Promise(function(resolve) {
-      iframe.onload = resolve;
-      /* Safety timeout in case onload never fires */
-      setTimeout(resolve, 5000);
-    });
-
-    /* Extra delay so Meta preview JS can render content */
-    await delay(1000);
-
-    var iframeDoc = null;
-    try {
-      iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    } catch(e) {
-      /* Cross-origin block — fall back to DOMParser */
-      try {
-        var parser = new DOMParser();
-        iframeDoc = parser.parseFromString(previewHtml, 'text/html');
-      } catch(e2) {
-        document.body.removeChild(iframe);
-        return null;
-      }
-    }
-
-    if (!iframeDoc) {
-      document.body.removeChild(iframe);
-      return null;
-    }
-
-    var candidates = [];
-
-    /* --- Scan all img elements --- */
-    var imgs = iframeDoc.querySelectorAll('img');
-    for (var i = 0; i < imgs.length; i++) {
-      var img = imgs[i];
-      var src = (
-        img.getAttribute('src') ||
-        img.getAttribute('data-src') ||
-        img.getAttribute('data-imgsrc') ||
-        ''
-      ).trim();
-      src = unwrapSafeImage(src);
-      if (isRejectUrl(src)) continue;
-
-      /* Use rendered size from getBoundingClientRect */
-      var rect = img.getBoundingClientRect();
-      var rw = Math.round(rect.width);
-      var rh = Math.round(rect.height);
-
-      /* Also check naturalWidth/Height */
-      var nw = img.naturalWidth || 0;
-      var nh = img.naturalHeight || 0;
-
-      /* Use the best available dimensions */
-      var w = rw > 0 ? rw : nw;
-      var h = rh > 0 ? rh : nh;
-
-      /* Reject tiny icons/avatars */
-      if ((w > 0 && w < 120) || (h > 0 && h < 120)) continue;
-
-      var score = 0;
-      /* Area-based score from rendered size */
-      if (w > 0 && h > 0) score += (w * h) / 100;
-      /* Natural size bonus */
-      if (nw > 0 && nh > 0) score += (nw * nh) / 500;
-      /* URL-based boosts */
-      var sl = src.toLowerCase();
-      if (sl.indexOf('scontent') !== -1) score += 1000;
-      if (sl.indexOf('fbcdn') !== -1) score += 700;
-      if (sl.indexOf('platform-lookaside') !== -1) score += 600;
-      if (sl.indexOf('graph.facebook.com') !== -1) score += 500;
-      if (score === 0) score = 100;
-      candidates.push({ src: src, score: score });
-    }
-
-    /* --- Scan srcset from <source> elements --- */
-    var sources = iframeDoc.querySelectorAll('source[srcset]');
-    for (var si = 0; si < sources.length; si++) {
-      var srcset = sources[si].getAttribute('srcset') || '';
-      var firstSrc = srcset.split(',')[0].trim().split(/\s+/)[0];
-      firstSrc = unwrapSafeImage(firstSrc);
-      if (!isRejectUrl(firstSrc)) {
-        var ssl = firstSrc.toLowerCase();
-        var sscore = 200;
-        if (ssl.indexOf('scontent') !== -1) sscore += 1000;
-        if (ssl.indexOf('fbcdn') !== -1) sscore += 700;
-        candidates.push({ src: firstSrc, score: sscore });
-      }
-    }
-
-    /* --- Scan background-image elements --- */
-    var allEls = iframeDoc.querySelectorAll('*');
-    for (var j = 0; j < allEls.length; j++) {
-      var el = allEls[j];
-      var style = el.getAttribute('style') || '';
-      if (style.toLowerCase().indexOf('background-image') === -1) continue;
-      var bgMatch = style.match(/background-image\s*:\s*url\(['"]?([^'")\s]+)/i);
-      if (!bgMatch || !bgMatch[1]) continue;
-      var bgSrc = unwrapSafeImage(bgMatch[1]);
-      if (isRejectUrl(bgSrc)) continue;
-
-      var bgRect = el.getBoundingClientRect();
-      var bgW = Math.round(bgRect.width);
-      var bgH = Math.round(bgRect.height);
-      if ((bgW > 0 && bgW < 120) || (bgH > 0 && bgH < 120)) continue;
-
-      var bgScore = 0;
-      if (bgW > 0 && bgH > 0) bgScore += (bgW * bgH) / 100;
-      var bsl = bgSrc.toLowerCase();
-      if (bsl.indexOf('scontent') !== -1) bgScore += 1000;
-      if (bsl.indexOf('fbcdn') !== -1) bgScore += 700;
-      if (bsl.indexOf('platform-lookaside') !== -1) bgScore += 600;
-      if (bgScore === 0) bgScore = 300;
-      candidates.push({ src: bgSrc, score: bgScore });
-    }
-
-    /* Clean up iframe */
-    document.body.removeChild(iframe);
-
-    if (!candidates.length) return null;
-    candidates.sort(function(a, b) { return b.score - a.score; });
-    console.log('RENDERED PREVIEW CANDIDATES', candidates.slice(0, 5));
-    return candidates[0].src || null;
-  } catch (e) {
-    console.log('extractPrimaryImageFromRenderedPreview error', e);
-    return null;
-  }
-}
-
-/* ============================================
-   3c. EXTRACT IMAGE HASH FROM CREATIVE
+   3b. EXTRACT IMAGE HASH FROM CREATIVE
    ============================================ */
 
 function extractImageHash(creative) {
@@ -580,22 +405,12 @@ function fetchData() {
       return fetchCreativeImages();
     })
     .then(function() {
-      /* Step 2b: resolve stable permalink_url via adimages endpoint */
-      if (adsData.length > 0) return fetchStableImages();
+      /* Resolve permanent permalink_url via image_hash + adimages endpoint */
+      if (adsData.length > 0) return fetchPermalinkImages();
     })
     .then(function() {
       if (adsData.length > 0) {
-        /* Progressive render: show cards immediately with stable/asset fallback */
-        resolveCardImages();
         applySort();
-        /* Then fetch previews and upgrade card images */
-        return fetchPreviewImages();
-      }
-    })
-    .then(function() {
-      if (adsData.length > 0) {
-        /* Re-resolve with preview images now available, then re-render */
-        resolveCardImages();
         renderCards();
         renderTable();
       }
@@ -678,10 +493,10 @@ function fetchCreativeImages() {
 }
 
 /* ============================================
-   5a2. FETCH STABLE IMAGES via adimages endpoint
+   5a2. FETCH PERMALINK IMAGES via adimages endpoint
    ============================================ */
 
-function fetchStableImages() {
+function fetchPermalinkImages() {
   var hashes = [];
   adsData.forEach(function(ad) {
     if (ad.imageHash && hashes.indexOf(ad.imageHash) === -1) {
@@ -692,106 +507,35 @@ function fetchStableImages() {
   if (!hashes.length) return Promise.resolve();
 
   var url = META_API + '/act_' + ACCOUNT_ID + '/adimages'
-    + '?fields=hash,permalink_url'
-    + '&hashes=' + encodeURIComponent(JSON.stringify(hashes))
+    + '?hashes=' + encodeURIComponent(JSON.stringify(hashes))
+    + '&fields=hash,permalink_url'
     + '&access_token=' + TOKEN;
 
   return fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(json) {
       if (!json.data) return;
-      var map = {};
+      var permalinkMap = {};
       json.data.forEach(function(img) {
         if (img.hash && img.permalink_url) {
-          map[img.hash] = img.permalink_url;
+          permalinkMap[img.hash] = img.permalink_url;
         }
       });
       adsData.forEach(function(ad) {
-        if (ad.imageHash && map[ad.imageHash]) {
-          ad.stableAssetImageUrl = map[ad.imageHash];
+        if (ad.imageHash && permalinkMap[ad.imageHash]) {
+          ad.finalCardImageUrl = permalinkMap[ad.imageHash];
+          ad.finalImageSource = 'permalink';
+        } else if (ad.assetImageUrl) {
+          ad.finalCardImageUrl = ad.assetImageUrl;
+          ad.finalImageSource = 'asset';
         }
       });
     })
-    .catch(function() { /* skip stable image errors silently */ });
+    .catch(function() { /* skip permalink errors silently */ });
 }
 
 /* ============================================
-   5b. FETCH PREVIEW IMAGES (batch)
-   ============================================ */
-
-function fetchPreviewImages() {
-  /* Try multiple preview formats in priority order.
-     Stop at the first one that yields a valid main image. */
-  var FORMATS = ['DESKTOP_FEED_STANDARD', 'MOBILE_FEED_STANDARD', 'INSTAGRAM_STANDARD'];
-
-  var promises = adsData.map(function(ad) {
-    if (!ad.id) return Promise.resolve();
-    return tryPreviewFormats(ad, FORMATS, 0);
-  });
-  return Promise.all(promises);
-}
-
-function tryPreviewFormats(ad, formats, index) {
-  if (index >= formats.length) return Promise.resolve();
-  var fmt = formats[index];
-  var url = META_API + '/' + ad.id
-    + '/previews?ad_format=' + fmt + '&access_token=' + TOKEN;
-
-  return fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(json) {
-      if (json.data && json.data[0] && json.data[0].body) {
-        var body = json.data[0].body;
-        /* Always store the first valid preview HTML for modal use */
-        if (!ad.previewHtml) {
-          ad.previewHtml = body;
-          ad.previewFormat = fmt;
-        }
-        /* Try to extract the main image from the rendered preview */
-        return extractPrimaryImageFromRenderedPreview(body)
-          .then(function(extracted) {
-            if (extracted) {
-              ad.previewImageUrl = extracted;
-              ad.previewHtml = body;
-              ad.previewFormat = fmt;
-              return; /* success — stop trying other formats */
-            }
-            /* Image extraction failed for this format — try next */
-            return tryPreviewFormats(ad, formats, index + 1);
-          });
-      }
-      /* No preview data for this format — try next */
-      return tryPreviewFormats(ad, formats, index + 1);
-    })
-    .catch(function() {
-      return tryPreviewFormats(ad, formats, index + 1);
-    });
-}
-
-/* ============================================
-   5c. RESOLVE CARD IMAGES — pick best source
-   ============================================ */
-
-function resolveCardImages() {
-  adsData.forEach(function(ad) {
-    if (ad.previewImageUrl) {
-      ad.finalCardImageUrl = ad.previewImageUrl;
-      ad.finalImageSource = 'preview';
-    } else if (ad.stableAssetImageUrl) {
-      ad.finalCardImageUrl = ad.stableAssetImageUrl;
-      ad.finalImageSource = 'stable';
-    } else if (ad.assetImageUrl) {
-      ad.finalCardImageUrl = ad.assetImageUrl;
-      ad.finalImageSource = 'asset';
-    } else {
-      ad.finalCardImageUrl = '';
-      ad.finalImageSource = 'none';
-    }
-  });
-}
-
-/* ============================================
-   6. PARSE AD DATA
+   5b. PARSE AD DATA
    ============================================ */
 
 function parseAd(raw) {
@@ -843,14 +587,11 @@ function parseAd(raw) {
     carouselCount: 0,
     objectType: '',
     imageHash: '',
-    /* --- Explicit image fields --- */
-    assetImageUrl: '',        /* from creative thumbnail_url / image_url / carousel */
-    stableAssetImageUrl: '',  /* from adimages permalink_url (never expires) */
-    previewHtml: '',          /* raw Meta ad preview HTML for modal iframe */
-    previewFormat: '',        /* which format worked (DESKTOP/MOBILE/INSTAGRAM) */
-    previewImageUrl: '',      /* extracted main image from rendered preview */
+    /* --- Image fields --- */
+    assetImageUrl: '',        /* from creative thumbnail_url / image_url / carousel (temporary) */
+    previewFormat: '',        /* which preview format to use in modal */
     finalCardImageUrl: '',    /* resolved best image for card display */
-    finalImageSource: 'none'  /* preview / stable / asset / none */
+    finalImageSource: 'none'  /* permalink / asset / none */
   };
 }
 
@@ -919,10 +660,8 @@ function renderCards() {
       carouselBadge = '<div class="badge-carousel">🎠 x' + ad.carouselCount + '</div>';
     }
     var sourceBadge = '';
-    if (ad.finalImageSource === 'preview') {
-      sourceBadge = '<div class="badge-source badge-source-preview">PREVIEW</div>';
-    } else if (ad.finalImageSource === 'stable') {
-      sourceBadge = '<div class="badge-source badge-source-preview">STABLE</div>';
+    if (ad.finalImageSource === 'permalink') {
+      sourceBadge = '<div class="badge-source badge-source-preview">PERMALINK</div>';
     } else if (ad.finalImageSource === 'asset') {
       sourceBadge = '<div class="badge-source badge-source-asset">ASSET</div>';
     }
@@ -970,10 +709,8 @@ function renderTable() {
       miniCarousel = '<span class="carousel-mini">🎠' + ad.carouselCount + '</span>';
     }
     var miniSource = '';
-    if (ad.finalImageSource === 'preview') {
-      miniSource = '<span class="source-mini source-mini-preview">PV</span>';
-    } else if (ad.finalImageSource === 'stable') {
-      miniSource = '<span class="source-mini source-mini-preview">ST</span>';
+    if (ad.finalImageSource === 'permalink') {
+      miniSource = '<span class="source-mini source-mini-preview">PL</span>';
     } else if (ad.finalImageSource === 'asset') {
       miniSource = '<span class="source-mini source-mini-asset">AS</span>';
     }
