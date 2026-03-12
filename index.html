@@ -316,9 +316,9 @@ function fetchData() {
         return;
       }
 
-      // Fetch creative IDs via /ads endpoint (batch by filtering)
+      // Fetch creative IDs and basic image via /ads endpoint
       var adsUrl = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/ads'
-        + '?fields=id,creative{id,thumbnail_url}'
+        + '?fields=id,creative{id,image_url,thumbnail_url,object_story_spec}'
         + '&filtering=[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]'
         + '&limit=200&access_token=' + TOKEN;
 
@@ -329,9 +329,24 @@ function fetchData() {
           if (adsJson.data) {
             adsJson.data.forEach(function(adObj) {
               if (adObj.creative) {
+                var c = adObj.creative;
+                // Extract best image from object_story_spec
+                var storyImg = '';
+                if (c.object_story_spec) {
+                  var spec = c.object_story_spec;
+                  if (spec.link_data && spec.link_data.picture) {
+                    storyImg = spec.link_data.picture;
+                  } else if (spec.link_data && spec.link_data.image_hash) {
+                    storyImg = ''; // will fetch via effective_image_url
+                  } else if (spec.video_data && spec.video_data.image_url) {
+                    storyImg = spec.video_data.image_url;
+                  } else if (spec.photo_data && spec.photo_data.url) {
+                    storyImg = spec.photo_data.url;
+                  }
+                }
                 creativeMap[adObj.id] = {
-                  creativeId: adObj.creative.id || '',
-                  thumbnail: adObj.creative.thumbnail_url || ''
+                  creativeId: c.id || '',
+                  thumbnail: storyImg || c.image_url || c.thumbnail_url || ''
                 };
               }
             });
@@ -344,19 +359,21 @@ function fetchData() {
             }
           });
 
-          // For ads that got a creativeId but no thumbnail, fetch individually
-          var thumbPromises = adsData.map(function(ad) {
+          // For ads still missing images, fetch effective_image_url from creative
+          var imgPromises = adsData.map(function(ad) {
             if (ad.creativeId && !ad.thumbnail) {
-              return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId + '?fields=thumbnail_url&access_token=' + TOKEN)
+              return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId + '?fields=effective_image_url,effective_instagram_media_id,image_url,thumbnail_url&access_token=' + TOKEN)
                 .then(function(r) { return r.json(); })
-                .then(function(j) { ad.thumbnail = j.thumbnail_url || ''; })
+                .then(function(j) {
+                  ad.thumbnail = j.effective_image_url || j.image_url || j.thumbnail_url || '';
+                })
                 .catch(function() { ad.thumbnail = ''; });
             }
             return Promise.resolve();
           });
-          return Promise.all(thumbPromises);
+          return Promise.all(imgPromises);
         })
-        .catch(function() { /* silently skip thumbnails on error */ });
+        .catch(function() { /* silently skip images on error */ });
     })
     .then(function() {
       if (adsData.length > 0) {
