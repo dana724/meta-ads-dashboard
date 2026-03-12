@@ -360,127 +360,80 @@ function getCreativeImage(creative) {
    ============================================ */
 
 function extractPrimaryImageFromPreview(previewHtml) {
-  /*
-   * Structurally parse the Meta ad preview HTML.
-   * Strategy: find the main media container first, then pick the
-   * largest qualifying image inside it. Fall back to scanning
-   * the full document only if the container search fails.
-   * Reject: profile pics, icons, reactions, emojis, static assets,
-   *         and anything under 120×120.
-   */
   if (!previewHtml) return null;
   try {
     var parser = new DOMParser();
     var doc = parser.parseFromString(previewHtml, 'text/html');
-
-    /* ---- helper: is this URL a reject? ---- */
+    function getImageUrl(img) {
+      if (!img) return '';
+      return (
+        img.getAttribute('src') ||
+        img.getAttribute('data-src') ||
+        img.getAttribute('data-imgsrc') ||
+        ''
+      ).trim();
+    }
     function isRejectUrl(src) {
-      if (!src || src.indexOf('data:') === 0) return true;
+      if (!src) return true;
       var s = src.toLowerCase();
-      var rejects = [
-        'profile', '/rsrc.php', 'emoji', '/images/reactions/',
-        'static.xx.fbcdn', 'platform-lookaside', 'graph.facebook.com',
-        'safe_image.php', '/p16x16/', '/p32x32/', '/p50x50/',
-        '.gif', 'spacer', 'tracking', 'pixel', 'beacon',
-        'tr?', '/tr/', 'impression'
-      ];
-      for (var i = 0; i < rejects.length; i++) {
-        if (s.indexOf(rejects[i]) !== -1) return true;
-      }
-      /* reject if URL path ends with typical icon extensions */
-      if (/\/(icon|logo|badge|button|arrow|close|check|star)[^\/]*\.(png|jpg|svg)/i.test(s)) return true;
+      if (s.indexOf('data:') === 0) return true;
+      if (s.indexOf('/rsrc.php') !== -1) return true;
+      if (s.indexOf('emoji') !== -1) return true;
+      if (s.indexOf('/images/reactions/') !== -1) return true;
+      if (s.indexOf('/p16x16/') !== -1) return true;
+      if (s.indexOf('/p32x32/') !== -1) return true;
+      if (s.indexOf('/p50x50/') !== -1) return true;
+      if (s.indexOf('tracking') !== -1) return true;
+      if (s.indexOf('pixel') !== -1) return true;
+      if (s.indexOf('beacon') !== -1) return true;
+      if (s.indexOf('spacer') !== -1) return true;
       return false;
     }
-
-    /* ---- helper: extract numeric dimension from attr or style ---- */
     function getDim(el, attr) {
-      var v = parseInt(el.getAttribute(attr)) || 0;
+      var v = parseInt(el.getAttribute(attr), 10) || 0;
       if (v > 0) return v;
-      var st = el.getAttribute('style') || '';
-      var m = st.match(new RegExp(attr + '\\s*:\\s*(\\d+)'));
-      return m ? parseInt(m[1]) : 0;
+      var style = el.getAttribute('style') || '';
+      var re = new RegExp(attr + '\\s*:\\s*(\\d+)', 'i');
+      var m = style.match(re);
+      return m ? (parseInt(m[1], 10) || 0) : 0;
     }
-
-    /* ---- helper: score a single <img> ---- */
     function scoreImg(img) {
-      var src = img.getAttribute('src') || '';
+      var src = getImageUrl(img);
       if (isRejectUrl(src)) return null;
       var w = getDim(img, 'width');
       var h = getDim(img, 'height');
-      /* reject anything explicitly under 120 in either dimension */
       if ((w > 0 && w < 120) || (h > 0 && h < 120)) return null;
       var score = 0;
       if (w > 0) score += w;
       if (h > 0) score += h;
-      /* boost CDN-hosted ad media */
-      var sl = src.toLowerCase();
-      if (sl.indexOf('scontent') !== -1) score += 800;
-      else if (sl.indexOf('fbcdn') !== -1) score += 500;
-      else if (sl.indexOf('xx.fbcdn') === -1) score += 200;
-      /* boost images with large inline style dimensions */
-      var stW = (img.getAttribute('style') || '').match(/width\s*:\s*(\d+)/);
-      if (stW && parseInt(stW[1]) >= 300) score += 400;
-      /* base score for images with no dimension info */
-      if (score === 0) score = 50;
+      var s = src.toLowerCase();
+      if (s.indexOf('scontent') !== -1) score += 1000;
+      if (s.indexOf('fbcdn') !== -1) score += 700;
+      if (s.indexOf('safe_image.php') !== -1) score += 600;
+      if (s.indexOf('platform-lookaside') !== -1) score += 600;
+      if (s.indexOf('graph.facebook.com') !== -1) score += 500;
+      if (score === 0) score = 100;
       return { src: src, score: score };
     }
-
-    /* ---- Step 1: try to find the main media container ---- */
-    /* Meta preview HTML typically wraps the main ad image in a div
-       with data-testid, or a link wrapping a large image, or a
-       container whose class includes "media", "image", "photo",
-       or "feed". Try several selectors. */
-    var mediaSelectors = [
-      '[data-testid="media"] img',
-      '[data-testid="post_message"] ~ * img',
-      '.mtm img', '.mvl img', '._5s6c img',
-      'a[href] > img',
-      'div[style*="background-image"]'
-    ];
-
-    var best = null;
-
-    for (var s = 0; s < mediaSelectors.length; s++) {
-      var sel = mediaSelectors[s];
-      /* special case: background-image divs */
-      if (sel.indexOf('background-image') !== -1) {
-        var bgDivs = doc.querySelectorAll(sel);
-        for (var b = 0; b < bgDivs.length; b++) {
-          var bgStyle = bgDivs[b].getAttribute('style') || '';
-          var bgMatch = bgStyle.match(/background-image\s*:\s*url\(['"]?([^'")\s]+)/);
-          if (bgMatch && !isRejectUrl(bgMatch[1])) {
-            var bgW = getDim(bgDivs[b], 'width');
-            var bgH = getDim(bgDivs[b], 'height');
-            if ((bgW > 0 && bgW < 120) || (bgH > 0 && bgH < 120)) continue;
-            var bgScore = (bgW || 0) + (bgH || 0) + 600;
-            if (!best || bgScore > best.score) {
-              best = { src: bgMatch[1], score: bgScore };
-            }
-          }
-        }
-        continue;
-      }
-      var imgs = doc.querySelectorAll(sel);
-      for (var j = 0; j < imgs.length; j++) {
-        var scored = scoreImg(imgs[j]);
-        if (scored && (!best || scored.score > best.score)) {
-          best = scored;
-        }
-      }
-      /* if we found something in a targeted selector, trust it */
-      if (best && best.score >= 500) return best.src;
+    var candidates = [];
+    var imgs = doc.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      var scored = scoreImg(imgs[i]);
+      if (scored) candidates.push(scored);
     }
-
-    /* ---- Step 2: fallback — scan ALL <img> in document ---- */
-    var allImgs = doc.querySelectorAll('img');
-    for (var k = 0; k < allImgs.length; k++) {
-      var sc = scoreImg(allImgs[k]);
-      if (sc && (!best || sc.score > best.score)) {
-        best = sc;
+    var bgEls = doc.querySelectorAll('[style*="background-image"]');
+    for (var j = 0; j < bgEls.length; j++) {
+      var bgStyle = bgEls[j].getAttribute('style') || '';
+      var bgMatch = bgStyle.match(/background-image\s*:\s*url\(['"]?([^'")\s]+)/i);
+      if (bgMatch && bgMatch[1] && !isRejectUrl(bgMatch[1])) {
+        candidates.push({ src: bgMatch[1], score: 500 });
       }
     }
-
-    return best ? best.src : null;
+    if (!candidates.length) return null;
+    candidates.sort(function(a, b) {
+      return b.score - a.score;
+    });
+    return candidates[0].src || null;
   } catch (e) {
     return null;
   }
@@ -927,12 +880,13 @@ function openModal(index) {
 
   document.getElementById('modalBody').innerHTML = html;
   document.getElementById('modalOverlay').classList.add('show');
-  loadAdPreview(ad.id);
+  loadAdPreview(ad);
 }
 
-function loadAdPreview(adId) {
-  var url = META_API + '/' + adId
-    + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
+function loadAdPreview(ad) {
+  var format = ad.previewFormat || 'DESKTOP_FEED_STANDARD';
+  var url = META_API + '/' + ad.id
+    + '/previews?ad_format=' + format + '&access_token=' + TOKEN;
 
   fetch(url)
     .then(function(r) { return r.json(); })
