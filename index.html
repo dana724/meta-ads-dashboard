@@ -531,6 +531,27 @@ async function extractPrimaryImageFromRenderedPreview(previewHtml) {
 }
 
 /* ============================================
+   3c. EXTRACT IMAGE HASH FROM CREATIVE
+   ============================================ */
+
+function extractImageHash(creative) {
+  if (!creative) return '';
+  if (creative.image_hash) return creative.image_hash;
+  var spec = creative.object_story_spec || {};
+  if (spec.link_data && spec.link_data.image_hash) return spec.link_data.image_hash;
+  if (spec.photo_data && spec.photo_data.image_hash) return spec.photo_data.image_hash;
+  if (spec.video_data && spec.video_data.image_hash) return spec.video_data.image_hash;
+  if (spec.link_data && spec.link_data.child_attachments) {
+    for (var i = 0; i < spec.link_data.child_attachments.length; i++) {
+      if (spec.link_data.child_attachments[i].image_hash) {
+        return spec.link_data.child_attachments[i].image_hash;
+      }
+    }
+  }
+  return '';
+}
+
+/* ============================================
    4. FETCH DATA — Main data pipeline
    ============================================ */
 
@@ -557,6 +578,10 @@ function fetchData() {
       }
       adsData = allData.map(parseAd);
       return fetchCreativeImages();
+    })
+    .then(function() {
+      /* Step 2b: resolve stable permalink_url via adimages endpoint */
+      if (adsData.length > 0) return fetchStableImages();
     })
     .then(function() {
       /* Step 3: fetch ad preview HTML and extract main images */
@@ -623,11 +648,11 @@ function fetchCreativeImages() {
         if (creativeMap[ad.id]) ad.creativeId = creativeMap[ad.id];
       });
 
-      /* Step 2: fetch creative details (thumbnail_url, object_story_spec, etc.) */
+      /* Step 2: fetch creative details (thumbnail_url, object_story_spec, image_hash, etc.) */
       var promises = adsData.map(function(ad) {
         if (!ad.creativeId) return Promise.resolve();
         var cUrl = META_API + '/' + ad.creativeId
-          + '?fields=thumbnail_url,image_url,object_story_spec,object_type'
+          + '?fields=thumbnail_url,image_url,object_story_spec,object_type,image_hash'
           + '&thumbnail_width=600&thumbnail_height=600'
           + '&access_token=' + TOKEN;
         return fetch(cUrl)
@@ -638,6 +663,7 @@ function fetchCreativeImages() {
             ad.creativeType = img.type;
             ad.carouselCount = img.count || 0;
             ad.objectType = creative.object_type || '';
+            ad.imageHash = extractImageHash(creative);
           })
           .catch(function() {
             ad.thumbnail = '';
@@ -648,6 +674,44 @@ function fetchCreativeImages() {
       return Promise.all(promises);
     })
     .catch(function() { /* skip image errors silently */ });
+}
+
+/* ============================================
+   5a2. FETCH STABLE IMAGES via adimages endpoint
+   ============================================ */
+
+function fetchStableImages() {
+  var hashes = [];
+  adsData.forEach(function(ad) {
+    if (ad.imageHash && hashes.indexOf(ad.imageHash) === -1) {
+      hashes.push(ad.imageHash);
+    }
+  });
+
+  if (!hashes.length) return Promise.resolve();
+
+  var url = META_API + '/act_' + ACCOUNT_ID + '/adimages'
+    + '?fields=hash,permalink_url'
+    + '&hashes=' + encodeURIComponent(JSON.stringify(hashes))
+    + '&access_token=' + TOKEN;
+
+  return fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (!json.data) return;
+      var map = {};
+      json.data.forEach(function(img) {
+        if (img.hash && img.permalink_url) {
+          map[img.hash] = img.permalink_url;
+        }
+      });
+      adsData.forEach(function(ad) {
+        if (ad.imageHash && map[ad.imageHash]) {
+          ad.stableImageUrl = map[ad.imageHash];
+        }
+      });
+    })
+    .catch(function() { /* skip stable image errors silently */ });
 }
 
 /* ============================================
@@ -708,16 +772,18 @@ function tryPreviewFormats(ad, formats, index) {
 function resolveCardImages() {
   /*
    * Priority for card thumbnail:
-   *   1. previewImage (extracted from Meta ad preview HTML)
-   *   2. carousel first attachment (already in thumbnail if carousel)
-   *   3. creative.image_url (already in thumbnail)
-   *   4. creative.thumbnail_url (already in thumbnail)
-   *   5. placeholder
+   *   1. previewImage (extracted from rendered Meta ad preview)
+   *   2. stableImageUrl (permalink_url from adimages endpoint — never expires)
+   *   3. thumbnail_url / image_url (temporary CDN — already in ad.thumbnail)
+   *   4. placeholder
    */
   adsData.forEach(function(ad) {
     if (ad.previewImage) {
       ad.thumbnail = ad.previewImage;
       ad.imageSource = 'preview';
+    } else if (ad.stableImageUrl) {
+      ad.thumbnail = ad.stableImageUrl;
+      ad.imageSource = 'stable';
     } else {
       ad.imageSource = ad.thumbnail ? 'asset' : 'none';
     }
@@ -780,7 +846,9 @@ function parseAd(raw) {
     previewImage: '',
     previewHtml: '',
     previewFormat: '',
-    imageSource: 'asset'
+    imageSource: 'asset',
+    imageHash: '',
+    stableImageUrl: ''
   };
 }
 
