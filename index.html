@@ -338,34 +338,39 @@ function fetchData() {
             });
           }
 
-          // Step 2: For each creative, fetch effective_image_url (best quality real ad image)
-          var imgPromises = adsData.map(function(ad) {
+          // Step 2: Get effective_object_story_id from each creative
+          var storyPromises = adsData.map(function(ad) {
             if (!ad.creativeId) return Promise.resolve();
             return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
-              + '?fields=effective_image_url,effective_object_story_id,image_url,thumbnail_url'
+              + '?fields=effective_object_story_id,effective_image_url,image_url,thumbnail_url'
               + '&access_token=' + TOKEN)
               .then(function(r) { return r.json(); })
               .then(function(j) {
-                // Priority: effective_image_url (actual ad image) > image_url > thumbnail_url
-                ad.thumbnail = j.effective_image_url || j.image_url || j.thumbnail_url || '';
                 ad.storyId = j.effective_object_story_id || '';
+                ad.fallbackImg = j.effective_image_url || j.image_url || j.thumbnail_url || '';
               })
-              .catch(function() { ad.thumbnail = ''; });
+              .catch(function() {});
           });
-          return Promise.all(imgPromises);
+          return Promise.all(storyPromises);
         })
         .then(function() {
-          // Step 3: For video/carousel ads still without good images, try fetching from the post
+          // Step 3: Fetch full_picture from the actual Facebook/Instagram post (best quality)
           var postPromises = adsData.map(function(ad) {
-            if (ad.thumbnail || !ad.storyId) return Promise.resolve();
+            if (!ad.storyId) {
+              ad.thumbnail = ad.fallbackImg || '';
+              return Promise.resolve();
+            }
             return fetch('https://graph.facebook.com/v19.0/' + ad.storyId
               + '?fields=full_picture,picture'
               + '&access_token=' + TOKEN)
               .then(function(r) { return r.json(); })
               .then(function(j) {
-                ad.thumbnail = j.full_picture || j.picture || '';
+                // full_picture = highest quality from the actual post
+                ad.thumbnail = j.full_picture || j.picture || ad.fallbackImg || '';
               })
-              .catch(function() {});
+              .catch(function() {
+                ad.thumbnail = ad.fallbackImg || '';
+              });
           });
           return Promise.all(postPromises);
         })
