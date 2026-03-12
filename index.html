@@ -338,41 +338,19 @@ function fetchData() {
             });
           }
 
-          // Step 2: Get effective_object_story_id from each creative
-          var storyPromises = adsData.map(function(ad) {
+          // Step 2: Fetch best available image from each creative
+          var imgPromises = adsData.map(function(ad) {
             if (!ad.creativeId) return Promise.resolve();
             return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
-              + '?fields=effective_object_story_id,effective_image_url,image_url,thumbnail_url'
+              + '?fields=effective_image_url,image_url,thumbnail_url'
               + '&access_token=' + TOKEN)
               .then(function(r) { return r.json(); })
               .then(function(j) {
-                ad.storyId = j.effective_object_story_id || '';
-                ad.fallbackImg = j.effective_image_url || j.image_url || j.thumbnail_url || '';
+                ad.thumbnail = j.effective_image_url || j.image_url || j.thumbnail_url || '';
               })
-              .catch(function() {});
+              .catch(function() { ad.thumbnail = ''; });
           });
-          return Promise.all(storyPromises);
-        })
-        .then(function() {
-          // Step 3: Fetch full_picture from the actual Facebook/Instagram post (best quality)
-          var postPromises = adsData.map(function(ad) {
-            if (!ad.storyId) {
-              ad.thumbnail = ad.fallbackImg || '';
-              return Promise.resolve();
-            }
-            return fetch('https://graph.facebook.com/v19.0/' + ad.storyId
-              + '?fields=full_picture,picture'
-              + '&access_token=' + TOKEN)
-              .then(function(r) { return r.json(); })
-              .then(function(j) {
-                // full_picture = highest quality from the actual post
-                ad.thumbnail = j.full_picture || j.picture || ad.fallbackImg || '';
-              })
-              .catch(function() {
-                ad.thumbnail = ad.fallbackImg || '';
-              });
-          });
-          return Promise.all(postPromises);
+          return Promise.all(imgPromises);
         })
         .catch(function() { /* silently skip images on error */ });
     })
