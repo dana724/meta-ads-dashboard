@@ -364,6 +364,17 @@ function extractPrimaryImageFromPreview(previewHtml) {
   try {
     var parser = new DOMParser();
     var doc = parser.parseFromString(previewHtml, 'text/html');
+    function unwrapSafeImage(src) {
+      if (!src) return src;
+      try {
+        if (src.toLowerCase().indexOf('safe_image.php') !== -1) {
+          var u = new URL(src);
+          var real = u.searchParams.get('url');
+          if (real) return decodeURIComponent(real);
+        }
+      } catch(e) {}
+      return src;
+    }
     function getImageUrl(img) {
       if (!img) return '';
       return (
@@ -399,6 +410,7 @@ function extractPrimaryImageFromPreview(previewHtml) {
     }
     function scoreImg(img) {
       var src = getImageUrl(img);
+      src = unwrapSafeImage(src);
       if (isRejectUrl(src)) return null;
       var w = getDim(img, 'width');
       var h = getDim(img, 'height');
@@ -425,8 +437,11 @@ function extractPrimaryImageFromPreview(previewHtml) {
     for (var j = 0; j < bgEls.length; j++) {
       var bgStyle = bgEls[j].getAttribute('style') || '';
       var bgMatch = bgStyle.match(/background-image\s*:\s*url\(['"]?([^'")\s]+)/i);
-      if (bgMatch && bgMatch[1] && !isRejectUrl(bgMatch[1])) {
-        candidates.push({ src: bgMatch[1], score: 500 });
+      if (bgMatch && bgMatch[1]) {
+        var bgSrc = unwrapSafeImage(bgMatch[1]);
+        if (!isRejectUrl(bgSrc)) {
+          candidates.push({ src: bgSrc, score: 500 });
+        }
       }
     }
     if (!candidates.length) return null;
