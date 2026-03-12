@@ -333,14 +333,25 @@ function fetchData() {
               }
             });
           }
-          // Step 2: Fetch thumbnail_url (600x600) for each creative
+          // Step 2: Fetch thumbnail for each creative (with carousel fallback)
           var imgPromises = adsData.map(function(ad) {
             if (!ad.creativeId) return Promise.resolve();
             return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
-              + '?fields=thumbnail_url&thumbnail_width=600&thumbnail_height=600'
+              + '?fields=thumbnail_url,object_story_spec,image_url&thumbnail_width=600&thumbnail_height=600'
               + '&access_token=' + TOKEN)
               .then(function(r) { return r.json(); })
-              .then(function(j) { ad.thumbnail = j.thumbnail_url || ''; })
+              .then(function(j) {
+                // Try thumbnail_url first (works for single image/video)
+                // Then try carousel first child image
+                // Then try image_url as last resort
+                ad.thumbnail = j.thumbnail_url
+                  || (j.object_story_spec && j.object_story_spec.link_data
+                      && j.object_story_spec.link_data.child_attachments
+                      && j.object_story_spec.link_data.child_attachments[0]
+                      && j.object_story_spec.link_data.child_attachments[0].picture)
+                  || j.image_url
+                  || '';
+              })
               .catch(function() { ad.thumbnail = ''; });
           });
           return Promise.all(imgPromises);
