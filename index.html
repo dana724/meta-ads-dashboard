@@ -123,7 +123,8 @@ a{color:var(--accent);text-decoration:none}
     <p>הזן את פרטי החיבור לחשבון המטא שלך</p>
     <input type="password" id="tokenInput" placeholder="Access Token">
     <input type="text" id="accountInput" placeholder="Ad Account ID" value="882300848610076">
-    <input type="password" id="claudeKeyInput" placeholder="Claude API Key (אופציונלי)">
+    <input type="password" id="claudeKeyInput" placeholder="Claude API Key">
+    <input type="text" id="workerUrlInput" placeholder="Cloudflare Worker URL (למשל: https://claude-proxy.xxx.workers.dev)">
     <button onclick="doLogin()">התחבר</button>
   </div>
 </div>
@@ -205,6 +206,7 @@ a{color:var(--accent);text-decoration:none}
 var TOKEN = '';
 var ACCOUNT_ID = '';
 var CLAUDE_KEY = '';
+var WORKER_URL = '';
 var adsData = [];
 var currentView = 'cards';
 
@@ -214,14 +216,17 @@ function doLogin() {
   var t = document.getElementById('tokenInput').value.trim();
   var a = document.getElementById('accountInput').value.trim();
   var c = document.getElementById('claudeKeyInput').value.trim();
+  var w = document.getElementById('workerUrlInput').value.trim().replace(/\/+$/, '');
   if (!t) { alert('יש להזין Access Token'); return; }
   if (!a) { alert('יש להזין Ad Account ID'); return; }
   TOKEN = t;
   ACCOUNT_ID = a;
   CLAUDE_KEY = c;
+  WORKER_URL = w;
   sessionStorage.setItem('meta_token', t);
   sessionStorage.setItem('meta_account', a);
   if (c) sessionStorage.setItem('claude_key', c);
+  if (w) sessionStorage.setItem('worker_url', w);
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('topbar').style.display = '';
   document.getElementById('mainContent').classList.remove('hidden');
@@ -234,6 +239,7 @@ function doLogout() {
   TOKEN = '';
   ACCOUNT_ID = '';
   CLAUDE_KEY = '';
+  WORKER_URL = '';
   adsData = [];
   document.getElementById('loginOverlay').style.display = '';
   document.getElementById('topbar').style.display = 'none';
@@ -249,13 +255,16 @@ function doLogout() {
   var t = sessionStorage.getItem('meta_token');
   var a = sessionStorage.getItem('meta_account');
   var c = sessionStorage.getItem('claude_key');
+  var w = sessionStorage.getItem('worker_url');
   if (t && a) {
     TOKEN = t;
     ACCOUNT_ID = a;
     CLAUDE_KEY = c || '';
+    WORKER_URL = w || '';
     document.getElementById('tokenInput').value = t;
     document.getElementById('accountInput').value = a;
     if (c) document.getElementById('claudeKeyInput').value = c;
+    if (w) document.getElementById('workerUrlInput').value = w;
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('topbar').style.display = '';
     document.getElementById('mainContent').classList.remove('hidden');
@@ -540,6 +549,10 @@ function runAnalysis() {
     alert('יש להזין Claude API Key בעת ההתחברות');
     return;
   }
+  if (!WORKER_URL) {
+    alert('יש להזין Cloudflare Worker URL בעת ההתחברות');
+    return;
+  }
   if (adsData.length === 0) {
     alert('אין נתונים לנתח. טען נתונים קודם.');
     return;
@@ -575,15 +588,13 @@ function runAnalysis() {
     + '\u26A0\uFE0F אזהרות וסיכונים\n\n'
     + 'הנתונים:\n' + JSON.stringify(summary, null, 2);
 
-  fetch('https://api.anthropic.com/v1/messages', {
+  fetch(WORKER_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': CLAUDE_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
+      apiKey: CLAUDE_KEY,
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }]
