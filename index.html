@@ -338,35 +338,76 @@ function fetchData() {
             });
           }
 
-          // Step 2: Get story ID + fallback image from each creative
+          // Step 2: Get images + image_hash from each creative
+          var imageHashes = [];
           var storyPromises = adsData.map(function(ad) {
             if (!ad.creativeId) return Promise.resolve();
             return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
-              + '?fields=effective_object_story_id,effective_image_url,image_url,thumbnail_url'
+              + '?fields=effective_image_url,image_url,thumbnail_url,image_hash,object_story_spec'
               + '&access_token=' + TOKEN)
               .then(function(r) { return r.json(); })
               .then(function(j) {
-                ad.storyId = j.effective_object_story_id || '';
-                ad.thumbnail = j.effective_image_url || j.image_url || j.thumbnail_url || '';
+                // Extract image_hash for high-res fetch
+                var hash = j.image_hash || '';
+                if (!hash && j.object_story_spec) {
+                  var s = j.object_story_spec;
+                  if (s.link_data) hash = s.link_data.image_hash || '';
+                  if (!hash && s.photo_data) hash = s.photo_data.image_hash || '';
+                  if (!hash && s.video_data) hash = s.video_data.image_hash || '';
+                }
+                ad.imageHash = hash;
+                if (hash) imageHashes.push(hash);
+
+                // Extract best fallback image from object_story_spec
+                var specImg = '';
+                if (j.object_story_spec) {
+                  var s = j.object_story_spec;
+                  if (s.photo_data && s.photo_data.url) specImg = s.photo_data.url;
+                  else if (s.video_data && s.video_data.image_url) specImg = s.video_data.image_url;
+                  else if (s.link_data && s.link_data.picture) specImg = s.link_data.picture;
+                }
+
+                // Fallback chain: spec image > image_url > effective_image_url > thumbnail_url
+                ad.thumbnail = specImg || j.image_url || j.effective_image_url || j.thumbnail_url || '';
               })
               .catch(function() { ad.thumbnail = ''; });
           });
-          return Promise.all(storyPromises);
+          return Promise.all(storyPromises).then(function() { return imageHashes; });
         })
-        .then(function() {
-          // Step 3: Fetch full_picture from the post (highest quality, needs pages_read_engagement)
-          var postPromises = adsData.map(function(ad) {
-            if (!ad.storyId) return Promise.resolve();
-            return fetch('https://graph.facebook.com/v19.0/' + ad.storyId
-              + '?fields=full_picture'
-              + '&access_token=' + TOKEN)
-              .then(function(r) { return r.json(); })
-              .then(function(j) {
-                if (j.full_picture) ad.thumbnail = j.full_picture;
-              })
-              .catch(function() { /* keep existing thumbnail */ });
-          });
-          return Promise.all(postPromises);
+        .then(function(imageHashes) {
+          // Step 3: Batch fetch original-resolution images from adimages endpoint
+          var uniqueHashes = (imageHashes || []).filter(function(h, i, a) { return h && a.indexOf(h) === i; });
+          if (uniqueHashes.length === 0) return;
+
+          return fetch('https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/adimages'
+            + '?hashes=' + encodeURIComponent(JSON.stringify(uniqueHashes))
+            + '&fields=hash,url,url_128'
+            + '&access_token=' + TOKEN)
+            .then(function(r) { return r.json(); })
+            .then(function(j) {
+              // adimages returns { data: { images: { "hash": { url: "..." } } } } or { data: [...] }
+              var hashToUrl = {};
+              if (j.data && j.data.images) {
+                // Object format: { images: { hash1: { url: ... }, hash2: { url: ... } } }
+                var imgs = j.data.images;
+                Object.keys(imgs).forEach(function(h) {
+                  if (imgs[h] && imgs[h].url) hashToUrl[h] = imgs[h].url;
+                });
+              } else if (j.data && Array.isArray(j.data)) {
+                // Array format
+                j.data.forEach(function(img) {
+                  if (img.hash && img.url) hashToUrl[img.hash] = img.url;
+                });
+              }
+
+              // Override thumbnails with original-resolution images
+              adsData.forEach(function(ad) {
+                if (ad.imageHash && hashToUrl[ad.imageHash]) {
+                  ad.thumbnail = hashToUrl[ad.imageHash];
+                }
+              });
+            })
+            .catch(function() { /* keep fallback thumbnails from Step 2 */ });
         })
         .catch(function() { /* silently skip images on error */ });
     })
