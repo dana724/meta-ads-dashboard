@@ -64,7 +64,7 @@ a{color:var(--accent);text-decoration:none}
 .ad-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}
 .ad-card .badge-carousel{position:absolute;top:42px;left:10px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.75);color:#fff;backdrop-filter:blur(8px)}
 .ad-card .badge-source{position:absolute;bottom:186px;left:10px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.5px;backdrop-filter:blur(8px)}
-.badge-source-preview{background:rgba(0,255,157,.25);color:var(--green)}
+.badge-source-permalink{background:rgba(0,255,157,.25);color:var(--green)}
 .badge-source-asset{background:rgba(255,255,255,.12);color:var(--dim)}
 .badge-win{background:rgba(0,255,157,.2);color:var(--green)}
 .badge-ok{background:rgba(255,215,0,.2);color:var(--yellow)}
@@ -87,7 +87,7 @@ a{color:var(--accent);text-decoration:none}
 .table-wrap .thumb-cell img{width:100%;height:100%;object-fit:cover}
 .table-wrap .carousel-mini{position:absolute;bottom:2px;left:2px;font-size:8px;background:rgba(120,80,255,.85);color:#fff;padding:1px 4px;border-radius:4px;font-weight:700}
 .table-wrap .source-mini{position:absolute;top:2px;left:2px;font-size:7px;padding:1px 3px;border-radius:3px;font-weight:700}
-.source-mini-preview{background:rgba(0,255,157,.3);color:var(--green)}
+.source-mini-permalink{background:rgba(0,255,157,.3);color:var(--green)}
 .source-mini-asset{background:rgba(255,255,255,.15);color:var(--dim)}
 
 /* ===== Modal ===== */
@@ -327,32 +327,102 @@ function syncPeriods() {
 }
 
 /* ============================================
-   3. IMAGE PIPELINE — handles all ad types
+   3. CREATIVE ASSET NORMALIZATION
+   Extracts structured asset data from a creative
+   object. Never touches preview HTML.
    ============================================ */
 
-function getCreativeImage(creative) {
-  /* Priority 1: carousel — check object_story_spec first */
+function normalizeCreativeAssets(creative) {
+  var result = {
+    creativeType: 'unknown',  /* image | video | carousel | unknown */
+    carouselCount: 0,
+    imageUrl: creative.image_url || '',
+    thumbnailUrl: creative.thumbnail_url || '',
+    videoThumbnailUrl: '',
+    carouselFirstImage: '',
+    objectType: creative.object_type || '',
+    imageHash: extractImageHash(creative)
+  };
+
   var spec = creative.object_story_spec || null;
+
+  /* --- Carousel detection --- */
   if (spec) {
     var linkData = spec.link_data || null;
     if (linkData && linkData.child_attachments && linkData.child_attachments.length > 0) {
       var kids = linkData.child_attachments;
-      var pic = kids[0].picture || kids[0].image_url || null;
-      return { src: pic, type: 'carousel', count: kids.length };
+      result.creativeType = 'carousel';
+      result.carouselCount = kids.length;
+      /* First valid child image */
+      for (var i = 0; i < kids.length; i++) {
+        var childImg = kids[i].picture || kids[i].image_url || '';
+        if (childImg) { result.carouselFirstImage = childImg; break; }
+      }
+      return result;
+    }
+
+    /* --- Video detection via object_story_spec --- */
+    if (spec.video_data) {
+      result.creativeType = 'video';
+      result.videoThumbnailUrl = spec.video_data.image_url || '';
+      return result;
     }
   }
 
-  /* Priority 2: single image/video — thumbnail_url */
-  if (creative.thumbnail_url) {
-    return { src: creative.thumbnail_url, type: 'single', count: 0 };
+  /* --- Video detection via object_type --- */
+  if (result.objectType === 'VIDEO' || result.objectType === 'SHARE' && creative.video_id) {
+    result.creativeType = 'video';
+    /* thumbnail_url is already captured; it's the video poster frame */
+    result.videoThumbnailUrl = result.thumbnailUrl;
+    return result;
   }
 
-  /* Priority 3: fallback — image_url */
-  if (creative.image_url) {
-    return { src: creative.image_url, type: 'single', count: 0 };
+  /* --- Image ad (default) --- */
+  if (result.imageUrl || result.thumbnailUrl || result.imageHash) {
+    result.creativeType = 'image';
   }
 
-  return { src: null, type: 'unknown', count: 0 };
+  return result;
+}
+
+/* ============================================
+   3b. RESOLVE CARD IMAGE (pure function)
+   Picks the best card thumbnail from asset data
+   only. Never inspects previewHtml.
+   ============================================ */
+
+function resolveCardImage(ad) {
+  /*
+   * CAROUSEL: first child attachment → permalink → image_url → thumbnail_url
+   * IMAGE:    permalink → image_url → thumbnail_url
+   * VIDEO:    videoThumbnailUrl → thumbnail_url
+   * Returns: { url: string, source: string }
+   */
+  var permalink = ad.permalinkUrl || '';
+  var imageUrl  = ad.imageUrl || '';
+  var thumbUrl  = ad.thumbnailUrl || '';
+
+  if (ad.creativeType === 'carousel') {
+    var carImg = ad.carouselFirstImage || '';
+    if (carImg)    return { url: carImg,    source: 'asset' };
+    if (permalink) return { url: permalink, source: 'permalink' };
+    if (imageUrl)  return { url: imageUrl,  source: 'asset' };
+    if (thumbUrl)  return { url: thumbUrl,  source: 'asset' };
+    return { url: '', source: 'none' };
+  }
+
+  if (ad.creativeType === 'video') {
+    var vidThumb = ad.videoThumbnailUrl || '';
+    if (vidThumb)  return { url: vidThumb,  source: 'asset' };
+    if (thumbUrl)  return { url: thumbUrl,  source: 'asset' };
+    return { url: '', source: 'none' };
+  }
+
+  /* Image ad (or unknown) */
+  if (permalink) return { url: permalink, source: 'permalink' };
+  if (imageUrl)  return { url: imageUrl,  source: 'asset' };
+  if (thumbUrl)  return { url: thumbUrl,  source: 'asset' };
+  return { url: '', source: 'none' };
 }
 
 /* ============================================
@@ -405,14 +475,14 @@ function fetchData() {
       return fetchCreativeImages();
     })
     .then(function() {
-      /* Resolve permanent permalink_url via image_hash + adimages endpoint */
+      /* Resolve stable permalink_url via image_hash + /adimages endpoint */
       if (adsData.length > 0) return fetchPermalinkImages();
     })
     .then(function() {
       if (adsData.length > 0) {
+        /* Pick best card image from asset data (never from preview HTML) */
+        resolveAllCardImages();
         applySort();
-        renderCards();
-        renderTable();
       }
     })
     .catch(function(err) {
@@ -464,27 +534,28 @@ function fetchCreativeImages() {
         if (creativeMap[ad.id]) ad.creativeId = creativeMap[ad.id];
       });
 
-      /* Step 2: fetch creative details (thumbnail_url, object_story_spec, image_hash, etc.) */
+      /* Step 2: fetch creative details */
       var promises = adsData.map(function(ad) {
         if (!ad.creativeId) return Promise.resolve();
         var cUrl = META_API + '/' + ad.creativeId
-          + '?fields=thumbnail_url,image_url,object_story_spec,object_type,image_hash'
+          + '?fields=thumbnail_url,image_url,image_hash,object_story_spec,object_type,video_id'
           + '&thumbnail_width=600&thumbnail_height=600'
           + '&access_token=' + TOKEN;
         return fetch(cUrl)
           .then(function(r) { return r.json(); })
           .then(function(creative) {
-            var img = getCreativeImage(creative);
-            ad.assetImageUrl = img.src || '';
-            ad.creativeType = img.type;
-            ad.carouselCount = img.count || 0;
-            ad.objectType = creative.object_type || '';
-            ad.imageHash = extractImageHash(creative);
+            var assets = normalizeCreativeAssets(creative);
+            ad.creativeType      = assets.creativeType;
+            ad.carouselCount     = assets.carouselCount;
+            ad.objectType        = assets.objectType;
+            ad.imageHash         = assets.imageHash;
+            ad.imageUrl          = assets.imageUrl;
+            ad.thumbnailUrl      = assets.thumbnailUrl;
+            ad.videoThumbnailUrl = assets.videoThumbnailUrl;
+            ad.carouselFirstImage = assets.carouselFirstImage;
           })
           .catch(function() {
-            ad.assetImageUrl = '';
             ad.creativeType = 'unknown';
-            ad.carouselCount = 0;
           });
       });
       return Promise.all(promises);
@@ -493,7 +564,10 @@ function fetchCreativeImages() {
 }
 
 /* ============================================
-   5a2. FETCH PERMALINK IMAGES via adimages endpoint
+   5a2. FETCH PERMALINK URLs via adimages endpoint
+   Only stores permalinkUrl on each ad.
+   Does NOT resolve final card image (that's
+   resolveCardImage's job).
    ============================================ */
 
 function fetchPermalinkImages() {
@@ -523,15 +597,25 @@ function fetchPermalinkImages() {
       });
       adsData.forEach(function(ad) {
         if (ad.imageHash && permalinkMap[ad.imageHash]) {
-          ad.finalCardImageUrl = permalinkMap[ad.imageHash];
-          ad.finalImageSource = 'permalink';
-        } else if (ad.assetImageUrl) {
-          ad.finalCardImageUrl = ad.assetImageUrl;
-          ad.finalImageSource = 'asset';
+          ad.permalinkUrl = permalinkMap[ad.imageHash];
         }
       });
     })
     .catch(function() { /* skip permalink errors silently */ });
+}
+
+/* ============================================
+   5a3. RESOLVE ALL CARD IMAGES
+   Runs resolveCardImage() on each ad after all
+   asset data and permalinks are available.
+   ============================================ */
+
+function resolveAllCardImages() {
+  adsData.forEach(function(ad) {
+    var resolved = resolveCardImage(ad);
+    ad.finalCardImageUrl = resolved.url;
+    ad.finalImageSource  = resolved.source;
+  });
 }
 
 /* ============================================
@@ -583,15 +667,19 @@ function parseAd(raw) {
     roas: roas,
     status: status,
     creativeId: '',
-    creativeType: 'unknown',
+    creativeType: 'unknown',     /* image | video | carousel | unknown */
     carouselCount: 0,
     objectType: '',
-    imageHash: '',
-    /* --- Image fields --- */
-    assetImageUrl: '',        /* from creative thumbnail_url / image_url / carousel (temporary) */
-    previewFormat: '',        /* which preview format to use in modal */
-    finalCardImageUrl: '',    /* resolved best image for card display */
-    finalImageSource: 'none'  /* permalink / asset / none */
+    /* --- Creative asset fields (from API, never from preview HTML) --- */
+    imageHash: '',               /* for permalink resolution */
+    imageUrl: '',                /* creative.image_url */
+    thumbnailUrl: '',            /* creative.thumbnail_url */
+    videoThumbnailUrl: '',       /* video poster from object_story_spec */
+    carouselFirstImage: '',      /* first child_attachment image */
+    permalinkUrl: '',            /* stable URL from /adimages (never expires) */
+    /* --- Resolved card display --- */
+    finalCardImageUrl: '',       /* best image for card, resolved by resolveCardImage() */
+    finalImageSource: 'none'     /* permalink | asset | none */
   };
 }
 
@@ -661,7 +749,7 @@ function renderCards() {
     }
     var sourceBadge = '';
     if (ad.finalImageSource === 'permalink') {
-      sourceBadge = '<div class="badge-source badge-source-preview">PERMALINK</div>';
+      sourceBadge = '<div class="badge-source badge-source-permalink">PERMALINK</div>';
     } else if (ad.finalImageSource === 'asset') {
       sourceBadge = '<div class="badge-source badge-source-asset">ASSET</div>';
     }
@@ -710,13 +798,14 @@ function renderTable() {
     }
     var miniSource = '';
     if (ad.finalImageSource === 'permalink') {
-      miniSource = '<span class="source-mini source-mini-preview">PL</span>';
+      miniSource = '<span class="source-mini source-mini-permalink">PL</span>';
     } else if (ad.finalImageSource === 'asset') {
       miniSource = '<span class="source-mini source-mini-asset">AS</span>';
     }
-    var typeLabel = ad.creativeType === 'carousel'
-      ? '🎠 קרוסלה'
-      : (ad.creativeType === 'single' ? '🖼 תמונה' : '-');
+    var typeLabel = '-';
+    if (ad.creativeType === 'carousel') typeLabel = '🎠 קרוסלה';
+    else if (ad.creativeType === 'video') typeLabel = '🎬 וידאו';
+    else if (ad.creativeType === 'image') typeLabel = '🖼 תמונה';
 
     html += '<tr onclick="openModal(' + i + ')" style="cursor:pointer">'
       + '<td><div class="thumb-cell">' + thumbHtml + miniCarousel + miniSource + '</div></td>'
@@ -793,9 +882,9 @@ function openModal(index) {
 }
 
 function loadAdPreview(ad) {
-  var format = ad.previewFormat || 'DESKTOP_FEED_STANDARD';
+  /* Preview is fetched on-demand for modal only — never used for card images */
   var url = META_API + '/' + ad.id
-    + '/previews?ad_format=' + format + '&access_token=' + TOKEN;
+    + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
 
   fetch(url)
     .then(function(r) { return r.json(); })
