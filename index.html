@@ -277,8 +277,8 @@ document.getElementById('periodSelectBottom').addEventListener('change', functio
 
 function fetchData() {
   var period = document.getElementById('periodSelect').value;
-  var url = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/insights'
-    + '?fields=ad_id,ad_name,adset_name,campaign_name,impressions,clicks,spend,reach,frequency,ctr,cpc,actions,action_values,creative'
+  var insightsUrl = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/insights'
+    + '?fields=ad_id,ad_name,adset_name,campaign_name,impressions,clicks,spend,reach,frequency,ctr,cpc,actions,action_values'
     + '&level=ad&date_preset=' + period
     + '&limit=200&access_token=' + TOKEN;
 
@@ -286,7 +286,7 @@ function fetchData() {
   document.getElementById('tableWrap').innerHTML = '';
   document.getElementById('metricsBar').innerHTML = '';
 
-  fetch(url)
+  fetch(insightsUrl)
     .then(function(r) { return r.json(); })
     .then(function(json) {
       if (json.error) {
@@ -299,21 +299,62 @@ function fetchData() {
         return;
       }
       adsData = data.map(parseAd);
-      // Fetch thumbnails
-      var thumbPromises = adsData.map(function(ad) {
-        if (ad.creativeId) {
-          return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId + '?fields=thumbnail_url&access_token=' + TOKEN)
-            .then(function(r) { return r.json(); })
-            .then(function(j) { ad.thumbnail = j.thumbnail_url || ''; })
-            .catch(function() { ad.thumbnail = ''; });
-        }
-        return Promise.resolve();
-      });
-      Promise.all(thumbPromises).then(function() {
+
+      // Collect unique ad IDs to fetch creative IDs
+      var adIds = adsData.map(function(ad) { return ad.id; }).filter(Boolean);
+      if (adIds.length === 0) {
+        renderMetrics(); renderCards(); renderTable();
+        return;
+      }
+
+      // Fetch creative IDs via /ads endpoint (batch by filtering)
+      var adsUrl = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/ads'
+        + '?fields=id,creative{id,thumbnail_url}'
+        + '&filtering=[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]'
+        + '&limit=200&access_token=' + TOKEN;
+
+      return fetch(adsUrl)
+        .then(function(r) { return r.json(); })
+        .then(function(adsJson) {
+          var creativeMap = {};
+          if (adsJson.data) {
+            adsJson.data.forEach(function(adObj) {
+              if (adObj.creative) {
+                creativeMap[adObj.id] = {
+                  creativeId: adObj.creative.id || '',
+                  thumbnail: adObj.creative.thumbnail_url || ''
+                };
+              }
+            });
+          }
+          // Assign creative data to adsData
+          adsData.forEach(function(ad) {
+            if (creativeMap[ad.id]) {
+              ad.creativeId = creativeMap[ad.id].creativeId;
+              ad.thumbnail = creativeMap[ad.id].thumbnail;
+            }
+          });
+
+          // For ads that got a creativeId but no thumbnail, fetch individually
+          var thumbPromises = adsData.map(function(ad) {
+            if (ad.creativeId && !ad.thumbnail) {
+              return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId + '?fields=thumbnail_url&access_token=' + TOKEN)
+                .then(function(r) { return r.json(); })
+                .then(function(j) { ad.thumbnail = j.thumbnail_url || ''; })
+                .catch(function() { ad.thumbnail = ''; });
+            }
+            return Promise.resolve();
+          });
+          return Promise.all(thumbPromises);
+        })
+        .catch(function() { /* silently skip thumbnails on error */ });
+    })
+    .then(function() {
+      if (adsData.length > 0) {
         renderMetrics();
         renderCards();
         renderTable();
-      });
+      }
     })
     .catch(function(err) {
       document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאת רשת: ' + escHtml(err.message) + '</div>';
