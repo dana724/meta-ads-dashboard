@@ -356,100 +356,176 @@ function getCreativeImage(creative) {
 }
 
 /* ============================================
-   3b. EXTRACT PRIMARY IMAGE FROM AD PREVIEW HTML
+   3b. EXTRACT PRIMARY IMAGE FROM RENDERED PREVIEW
    ============================================ */
 
-function extractPrimaryImageFromPreview(previewHtml) {
+function delay(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+function unwrapSafeImage(src) {
+  if (!src) return src;
+  try {
+    if (src.toLowerCase().indexOf('safe_image.php') !== -1) {
+      var u = new URL(src);
+      var real = u.searchParams.get('url');
+      if (real) return decodeURIComponent(real);
+    }
+  } catch(e) {}
+  return src;
+}
+
+function isRejectUrl(src) {
+  if (!src) return true;
+  var s = src.toLowerCase();
+  if (s.indexOf('data:') === 0) return true;
+  if (s.indexOf('/rsrc.php') !== -1) return true;
+  if (s.indexOf('emoji') !== -1) return true;
+  if (s.indexOf('/images/reactions/') !== -1) return true;
+  if (s.indexOf('/p16x16/') !== -1) return true;
+  if (s.indexOf('/p32x32/') !== -1) return true;
+  if (s.indexOf('/p50x50/') !== -1) return true;
+  if (s.indexOf('tracking') !== -1) return true;
+  if (s.indexOf('pixel') !== -1) return true;
+  if (s.indexOf('beacon') !== -1) return true;
+  if (s.indexOf('spacer') !== -1) return true;
+  return false;
+}
+
+async function extractPrimaryImageFromRenderedPreview(previewHtml) {
   if (!previewHtml) return null;
   try {
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(previewHtml, 'text/html');
-    function unwrapSafeImage(src) {
-      if (!src) return src;
+    var iframe = document.createElement('iframe');
+    iframe.setAttribute('style',
+      'position:fixed;left:-99999px;top:0;width:500px;height:900px;opacity:0;pointer-events:none;');
+    iframe.srcdoc = previewHtml;
+    document.body.appendChild(iframe);
+
+    /* Wait for iframe to load */
+    await new Promise(function(resolve) {
+      iframe.onload = resolve;
+      /* Safety timeout in case onload never fires */
+      setTimeout(resolve, 5000);
+    });
+
+    /* Extra delay so Meta preview JS can render content */
+    await delay(1000);
+
+    var iframeDoc = null;
+    try {
+      iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    } catch(e) {
+      /* Cross-origin block — fall back to DOMParser */
       try {
-        if (src.toLowerCase().indexOf('safe_image.php') !== -1) {
-          var u = new URL(src);
-          var real = u.searchParams.get('url');
-          if (real) return decodeURIComponent(real);
-        }
-      } catch(e) {}
-      return src;
+        var parser = new DOMParser();
+        iframeDoc = parser.parseFromString(previewHtml, 'text/html');
+      } catch(e2) {
+        document.body.removeChild(iframe);
+        return null;
+      }
     }
-    function getImageUrl(img) {
-      if (!img) return '';
-      return (
+
+    if (!iframeDoc) {
+      document.body.removeChild(iframe);
+      return null;
+    }
+
+    var candidates = [];
+
+    /* --- Scan all img elements --- */
+    var imgs = iframeDoc.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      var img = imgs[i];
+      var src = (
         img.getAttribute('src') ||
         img.getAttribute('data-src') ||
         img.getAttribute('data-imgsrc') ||
         ''
       ).trim();
-    }
-    function isRejectUrl(src) {
-      if (!src) return true;
-      var s = src.toLowerCase();
-      if (s.indexOf('data:') === 0) return true;
-      if (s.indexOf('/rsrc.php') !== -1) return true;
-      if (s.indexOf('emoji') !== -1) return true;
-      if (s.indexOf('/images/reactions/') !== -1) return true;
-      if (s.indexOf('/p16x16/') !== -1) return true;
-      if (s.indexOf('/p32x32/') !== -1) return true;
-      if (s.indexOf('/p50x50/') !== -1) return true;
-      if (s.indexOf('tracking') !== -1) return true;
-      if (s.indexOf('pixel') !== -1) return true;
-      if (s.indexOf('beacon') !== -1) return true;
-      if (s.indexOf('spacer') !== -1) return true;
-      return false;
-    }
-    function getDim(el, attr) {
-      var v = parseInt(el.getAttribute(attr), 10) || 0;
-      if (v > 0) return v;
-      var style = el.getAttribute('style') || '';
-      var re = new RegExp(attr + '\\s*:\\s*(\\d+)', 'i');
-      var m = style.match(re);
-      return m ? (parseInt(m[1], 10) || 0) : 0;
-    }
-    function scoreImg(img) {
-      var src = getImageUrl(img);
       src = unwrapSafeImage(src);
-      if (isRejectUrl(src)) return null;
-      var w = getDim(img, 'width');
-      var h = getDim(img, 'height');
-      if ((w > 0 && w < 120) || (h > 0 && h < 120)) return null;
+      if (isRejectUrl(src)) continue;
+
+      /* Use rendered size from getBoundingClientRect */
+      var rect = img.getBoundingClientRect();
+      var rw = Math.round(rect.width);
+      var rh = Math.round(rect.height);
+
+      /* Also check naturalWidth/Height */
+      var nw = img.naturalWidth || 0;
+      var nh = img.naturalHeight || 0;
+
+      /* Use the best available dimensions */
+      var w = rw > 0 ? rw : nw;
+      var h = rh > 0 ? rh : nh;
+
+      /* Reject tiny icons/avatars */
+      if ((w > 0 && w < 120) || (h > 0 && h < 120)) continue;
+
       var score = 0;
-      if (w > 0) score += w;
-      if (h > 0) score += h;
-      var s = src.toLowerCase();
-      if (s.indexOf('scontent') !== -1) score += 1000;
-      if (s.indexOf('fbcdn') !== -1) score += 700;
-      if (s.indexOf('safe_image.php') !== -1) score += 600;
-      if (s.indexOf('platform-lookaside') !== -1) score += 600;
-      if (s.indexOf('graph.facebook.com') !== -1) score += 500;
+      /* Area-based score from rendered size */
+      if (w > 0 && h > 0) score += (w * h) / 100;
+      /* Natural size bonus */
+      if (nw > 0 && nh > 0) score += (nw * nh) / 500;
+      /* URL-based boosts */
+      var sl = src.toLowerCase();
+      if (sl.indexOf('scontent') !== -1) score += 1000;
+      if (sl.indexOf('fbcdn') !== -1) score += 700;
+      if (sl.indexOf('platform-lookaside') !== -1) score += 600;
+      if (sl.indexOf('graph.facebook.com') !== -1) score += 500;
       if (score === 0) score = 100;
-      return { src: src, score: score };
+      candidates.push({ src: src, score: score });
     }
-    var candidates = [];
-    var imgs = doc.querySelectorAll('img');
-    for (var i = 0; i < imgs.length; i++) {
-      var scored = scoreImg(imgs[i]);
-      if (scored) candidates.push(scored);
-    }
-    var bgEls = doc.querySelectorAll('[style*="background-image"]');
-    for (var j = 0; j < bgEls.length; j++) {
-      var bgStyle = bgEls[j].getAttribute('style') || '';
-      var bgMatch = bgStyle.match(/background-image\s*:\s*url\(['"]?([^'")\s]+)/i);
-      if (bgMatch && bgMatch[1]) {
-        var bgSrc = unwrapSafeImage(bgMatch[1]);
-        if (!isRejectUrl(bgSrc)) {
-          candidates.push({ src: bgSrc, score: 500 });
-        }
+
+    /* --- Scan srcset from <source> elements --- */
+    var sources = iframeDoc.querySelectorAll('source[srcset]');
+    for (var si = 0; si < sources.length; si++) {
+      var srcset = sources[si].getAttribute('srcset') || '';
+      var firstSrc = srcset.split(',')[0].trim().split(/\s+/)[0];
+      firstSrc = unwrapSafeImage(firstSrc);
+      if (!isRejectUrl(firstSrc)) {
+        var ssl = firstSrc.toLowerCase();
+        var sscore = 200;
+        if (ssl.indexOf('scontent') !== -1) sscore += 1000;
+        if (ssl.indexOf('fbcdn') !== -1) sscore += 700;
+        candidates.push({ src: firstSrc, score: sscore });
       }
     }
+
+    /* --- Scan background-image elements --- */
+    var allEls = iframeDoc.querySelectorAll('*');
+    for (var j = 0; j < allEls.length; j++) {
+      var el = allEls[j];
+      var style = el.getAttribute('style') || '';
+      if (style.toLowerCase().indexOf('background-image') === -1) continue;
+      var bgMatch = style.match(/background-image\s*:\s*url\(['"]?([^'")\s]+)/i);
+      if (!bgMatch || !bgMatch[1]) continue;
+      var bgSrc = unwrapSafeImage(bgMatch[1]);
+      if (isRejectUrl(bgSrc)) continue;
+
+      var bgRect = el.getBoundingClientRect();
+      var bgW = Math.round(bgRect.width);
+      var bgH = Math.round(bgRect.height);
+      if ((bgW > 0 && bgW < 120) || (bgH > 0 && bgH < 120)) continue;
+
+      var bgScore = 0;
+      if (bgW > 0 && bgH > 0) bgScore += (bgW * bgH) / 100;
+      var bsl = bgSrc.toLowerCase();
+      if (bsl.indexOf('scontent') !== -1) bgScore += 1000;
+      if (bsl.indexOf('fbcdn') !== -1) bgScore += 700;
+      if (bsl.indexOf('platform-lookaside') !== -1) bgScore += 600;
+      if (bgScore === 0) bgScore = 300;
+      candidates.push({ src: bgSrc, score: bgScore });
+    }
+
+    /* Clean up iframe */
+    document.body.removeChild(iframe);
+
     if (!candidates.length) return null;
-    candidates.sort(function(a, b) {
-      return b.score - a.score;
-    });
+    candidates.sort(function(a, b) { return b.score - a.score; });
+    console.log('RENDERED PREVIEW CANDIDATES', candidates.slice(0, 5));
     return candidates[0].src || null;
   } catch (e) {
+    console.log('extractPrimaryImageFromRenderedPreview error', e);
     return null;
   }
 }
@@ -602,63 +678,21 @@ function tryPreviewFormats(ad, formats, index) {
       if (json.data && json.data[0] && json.data[0].body) {
         var body = json.data[0].body;
 
-        /* ---- DEBUG: log all image candidates from preview HTML ---- */
-        try {
-          var dbgParser = new DOMParser();
-          var dbgDoc = dbgParser.parseFromString(body, 'text/html');
-          var dbgCandidates = [];
-          var dbgImgs = dbgDoc.querySelectorAll('img');
-          for (var di = 0; di < dbgImgs.length; di++) {
-            var dImg = dbgImgs[di];
-            var dSrc = dImg.getAttribute('src') || '';
-            var dDataSrc = dImg.getAttribute('data-src') || '';
-            var dDataImgSrc = dImg.getAttribute('data-imgsrc') || '';
-            var dSrcset = dImg.getAttribute('srcset') || '';
-            var dSrcsetFirst = dSrcset ? dSrcset.split(',')[0].trim().split(/\s+/)[0] : '';
-            dbgCandidates.push({
-              ad: ad.name,
-              src: dSrc,
-              dataSrc: dDataSrc,
-              dataImgSrc: dDataImgSrc,
-              srcsetFirst: dSrcsetFirst,
-              width: dImg.getAttribute('width') || '',
-              height: dImg.getAttribute('height') || '',
-              style: (dImg.getAttribute('style') || '').substring(0, 120)
-            });
-          }
-          var dbgBgEls = dbgDoc.querySelectorAll('[style*="background-image"]');
-          for (var db = 0; db < dbgBgEls.length; db++) {
-            var dbgStyle = dbgBgEls[db].getAttribute('style') || '';
-            var dbgBgMatch = dbgStyle.match(/background-image\s*:\s*url\(['"]?([^'")\s]+)/i);
-            if (dbgBgMatch) {
-              dbgCandidates.push({
-                ad: ad.name,
-                src: '[bg-image] ' + dbgBgMatch[1],
-                dataSrc: '',
-                dataImgSrc: '',
-                srcsetFirst: '',
-                width: '',
-                height: '',
-                style: dbgStyle.substring(0, 120)
-              });
+        /* Render preview in hidden iframe and extract image */
+        return extractPrimaryImageFromRenderedPreview(body)
+          .then(function(extracted) {
+            console.log('SELECTED PREVIEW IMAGE', ad.name, fmt, extracted);
+            if (extracted) {
+              ad.previewHtml = body;
+              ad.previewImage = extracted;
+              ad.previewFormat = fmt;
+              return; /* success — stop trying other formats */
             }
-          }
-          console.log('PREVIEW IMAGE CANDIDATES [' + fmt + ']', ad.name, dbgCandidates);
-        } catch (dbgErr) {
-          console.log('DEBUG PARSE ERROR', dbgErr);
-        }
-        /* ---- END DEBUG ---- */
-
-        var extracted = extractPrimaryImageFromPreview(body);
-        console.log('SELECTED PREVIEW IMAGE', ad.name, fmt, extracted);
-        if (extracted) {
-          ad.previewHtml = body;
-          ad.previewImage = extracted;
-          ad.previewFormat = fmt;
-          return; /* success — stop trying other formats */
-        }
+            /* this format didn't yield a usable image — try next */
+            return tryPreviewFormats(ad, formats, index + 1);
+          });
       }
-      /* this format didn't yield a usable image — try next */
+      /* no preview data — try next format */
       return tryPreviewFormats(ad, formats, index + 1);
     })
     .catch(function() {
