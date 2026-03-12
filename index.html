@@ -316,62 +316,58 @@ function fetchData() {
         return;
       }
 
-      // Fetch creative IDs and basic image via /ads endpoint
+      // Step 1: Fetch creative IDs via /ads endpoint
       var adsUrl = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/ads'
-        + '?fields=id,creative{id,image_url,thumbnail_url,object_story_spec}'
+        + '?fields=id,creative{id}'
         + '&filtering=[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]'
         + '&limit=200&access_token=' + TOKEN;
 
       return fetch(adsUrl)
         .then(function(r) { return r.json(); })
         .then(function(adsJson) {
-          var creativeMap = {};
+          // Map ad ID to creative ID
           if (adsJson.data) {
             adsJson.data.forEach(function(adObj) {
-              if (adObj.creative) {
-                var c = adObj.creative;
-                // Extract best image from object_story_spec
-                var storyImg = '';
-                if (c.object_story_spec) {
-                  var spec = c.object_story_spec;
-                  if (spec.link_data && spec.link_data.picture) {
-                    storyImg = spec.link_data.picture;
-                  } else if (spec.link_data && spec.link_data.image_hash) {
-                    storyImg = ''; // will fetch via effective_image_url
-                  } else if (spec.video_data && spec.video_data.image_url) {
-                    storyImg = spec.video_data.image_url;
-                  } else if (spec.photo_data && spec.photo_data.url) {
-                    storyImg = spec.photo_data.url;
+              if (adObj.creative && adObj.creative.id) {
+                adsData.forEach(function(ad) {
+                  if (ad.id === adObj.id) {
+                    ad.creativeId = adObj.creative.id;
                   }
-                }
-                creativeMap[adObj.id] = {
-                  creativeId: c.id || '',
-                  thumbnail: storyImg || c.image_url || c.thumbnail_url || ''
-                };
+                });
               }
             });
           }
-          // Assign creative data to adsData
-          adsData.forEach(function(ad) {
-            if (creativeMap[ad.id]) {
-              ad.creativeId = creativeMap[ad.id].creativeId;
-              ad.thumbnail = creativeMap[ad.id].thumbnail;
-            }
-          });
 
-          // For ads still missing images, fetch effective_image_url from creative
+          // Step 2: For each creative, fetch effective_image_url (best quality real ad image)
           var imgPromises = adsData.map(function(ad) {
-            if (ad.creativeId && !ad.thumbnail) {
-              return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId + '?fields=effective_image_url,effective_instagram_media_id,image_url,thumbnail_url&access_token=' + TOKEN)
-                .then(function(r) { return r.json(); })
-                .then(function(j) {
-                  ad.thumbnail = j.effective_image_url || j.image_url || j.thumbnail_url || '';
-                })
-                .catch(function() { ad.thumbnail = ''; });
-            }
-            return Promise.resolve();
+            if (!ad.creativeId) return Promise.resolve();
+            return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
+              + '?fields=effective_image_url,effective_object_story_id,image_url,thumbnail_url'
+              + '&access_token=' + TOKEN)
+              .then(function(r) { return r.json(); })
+              .then(function(j) {
+                // Priority: effective_image_url (actual ad image) > image_url > thumbnail_url
+                ad.thumbnail = j.effective_image_url || j.image_url || j.thumbnail_url || '';
+                ad.storyId = j.effective_object_story_id || '';
+              })
+              .catch(function() { ad.thumbnail = ''; });
           });
           return Promise.all(imgPromises);
+        })
+        .then(function() {
+          // Step 3: For video/carousel ads still without good images, try fetching from the post
+          var postPromises = adsData.map(function(ad) {
+            if (ad.thumbnail || !ad.storyId) return Promise.resolve();
+            return fetch('https://graph.facebook.com/v19.0/' + ad.storyId
+              + '?fields=full_picture,picture'
+              + '&access_token=' + TOKEN)
+              .then(function(r) { return r.json(); })
+              .then(function(j) {
+                ad.thumbnail = j.full_picture || j.picture || '';
+              })
+              .catch(function() {});
+          });
+          return Promise.all(postPromises);
         })
         .catch(function() { /* silently skip images on error */ });
     })
