@@ -586,7 +586,56 @@ function tryPreviewFormats(ad, formats, index) {
     .then(function(json) {
       if (json.data && json.data[0] && json.data[0].body) {
         var body = json.data[0].body;
+
+        /* ---- DEBUG: log all image candidates from preview HTML ---- */
+        try {
+          var dbgParser = new DOMParser();
+          var dbgDoc = dbgParser.parseFromString(body, 'text/html');
+          var dbgCandidates = [];
+          var dbgImgs = dbgDoc.querySelectorAll('img');
+          for (var di = 0; di < dbgImgs.length; di++) {
+            var dImg = dbgImgs[di];
+            var dSrc = dImg.getAttribute('src') || '';
+            var dDataSrc = dImg.getAttribute('data-src') || '';
+            var dDataImgSrc = dImg.getAttribute('data-imgsrc') || '';
+            var dSrcset = dImg.getAttribute('srcset') || '';
+            var dSrcsetFirst = dSrcset ? dSrcset.split(',')[0].trim().split(/\s+/)[0] : '';
+            dbgCandidates.push({
+              ad: ad.name,
+              src: dSrc,
+              dataSrc: dDataSrc,
+              dataImgSrc: dDataImgSrc,
+              srcsetFirst: dSrcsetFirst,
+              width: dImg.getAttribute('width') || '',
+              height: dImg.getAttribute('height') || '',
+              style: (dImg.getAttribute('style') || '').substring(0, 120)
+            });
+          }
+          var dbgBgEls = dbgDoc.querySelectorAll('[style*="background-image"]');
+          for (var db = 0; db < dbgBgEls.length; db++) {
+            var dbgStyle = dbgBgEls[db].getAttribute('style') || '';
+            var dbgBgMatch = dbgStyle.match(/background-image\s*:\s*url\(['"]?([^'")\s]+)/i);
+            if (dbgBgMatch) {
+              dbgCandidates.push({
+                ad: ad.name,
+                src: '[bg-image] ' + dbgBgMatch[1],
+                dataSrc: '',
+                dataImgSrc: '',
+                srcsetFirst: '',
+                width: '',
+                height: '',
+                style: dbgStyle.substring(0, 120)
+              });
+            }
+          }
+          console.log('PREVIEW IMAGE CANDIDATES [' + fmt + ']', ad.name, dbgCandidates);
+        } catch (dbgErr) {
+          console.log('DEBUG PARSE ERROR', dbgErr);
+        }
+        /* ---- END DEBUG ---- */
+
         var extracted = extractPrimaryImageFromPreview(body);
+        console.log('SELECTED PREVIEW IMAGE', ad.name, fmt, extracted);
         if (extracted) {
           ad.previewHtml = body;
           ad.previewImage = extracted;
