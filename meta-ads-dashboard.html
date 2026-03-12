@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Ads Intelligence</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #0a0a0f;
+    color: #fff;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    direction: rtl;
+  }
+  .header {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(0,255,157,0.02);
+  }
+  .logo {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, #00ff9d, #0066ff);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .header-title { font-size: 18px; font-weight: 700; }
+  .header-sub { font-size: 12px; color: #555; margin-top: 2px; }
+  .nav-buttons { margin-right: auto; display: flex; gap: 8px; }
+  .nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #666; border-radius: 8px;
+    padding: 6px 16px; cursor: pointer; font-size: 13px;
+    transition: all 0.2s;
+  }
+  .nav-btn.active {
+    background: rgba(0,255,157,0.1);
+    border-color: #00ff9d; color: #00ff9d;
+  }
+  .nav-btn.green {
+    background: rgba(0,255,157,0.05);
+    border-color: rgba(0,255,157,0.3); color: #00ff9d;
+  }
+  .content { padding: 28px; }
+
+  /* Connect Panel */
+  .connect-panel {
+    max-width: 520px; margin: 40px auto;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 32px;
+  }
+  .connect-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .connect-sub { font-size: 13px; color: #666; margin-bottom: 28px; line-height: 1.6; }
+  .field { margin-bottom: 16px; }
+  .field label { font-size: 11px; color: #888; letter-spacing: 1px; display: block; margin-bottom: 6px; text-transform: uppercase; }
+  .field input, .field select {
+    width: 100%; padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; color: #fff; font-size: 14px; outline: none;
+  }
+  .field select { background: #111; }
+  .btn-main {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #00ff9d, #00cc7a);
+    border: none; border-radius: 10px;
+    color: #000; font-size: 15px; font-weight: 700;
+    cursor: pointer; margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+  .btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
+  .security-note {
+    margin-top: 20px; padding: 14px;
+    background: rgba(0,100,255,0.05);
+    border: 1px solid rgba(0,100,255,0.15);
+    border-radius: 8px; font-size: 12px; color: #6688ff; line-height: 1.5;
+  }
+  .error-box {
+    background: rgba(255,68,68,0.1);
+    border: 1px solid rgba(255,68,68,0.3);
+    border-radius: 8px; padding: 12px;
+    font-size: 13px; color: #ff6666;
+    margin-bottom: 12px; display: none;
+  }
+
+  /* Metrics */
+  .metrics-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .metric-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 16px 20px;
+    flex: 1; min-width: 120px;
+  }
+  .metric-label { font-size: 11px; color: #888; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .metric-value { font-size: 22px; font-weight: 700; font-family: 'Courier New', monospace; }
+  .metric-sub { font-size: 11px; color: #555; margin-top: 4px; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 80px 75px 70px 70px 70px 65px 70px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px 8px 0 0;
+    font-size: 11px; color: #555;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    min-width: 900px;
+  }
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 80px 75px 70px 70px 70px 65px 70px;
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    align-items: center;
+    min-width: 900px;
+    transition: background 0.15s;
+  }
+  .table-row:hover { background: rgba(255,255,255,0.02); }
+  .table-row:nth-child(even) { background: rgba(255,255,255,0.01); }
+  .ad-name { font-size: 13px; font-weight: 500; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+  .campaign-name { font-size: 11px; color: #444; }
+  .adset-name { font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cell-center { text-align: center; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+  }
+
+  /* Analysis */
+  .analysis-panel {
+    max-width: 760px; margin: 0 auto;
+    background: rgba(0,255,157,0.02);
+    border: 1px solid rgba(0,255,157,0.1);
+    border-radius: 16px; padding: 28px 32px;
+  }
+  .analysis-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .analysis-title { font-size: 16px; font-weight: 700; }
+  .analysis-sub { font-size: 12px; color: #555; }
+  .analysis-content { line-height: 1.7; }
+  .analysis-h2 {
+    font-size: 16px; font-weight: 700; color: #00ff9d;
+    margin-top: 24px; margin-bottom: 8px;
+    border-bottom: 1px solid rgba(0,255,157,0.2);
+    padding-bottom: 6px;
+  }
+  .analysis-p { color: #ccc; font-size: 14px; margin-bottom: 4px; }
+  .loading-center { text-align: center; padding: 80px 20px; }
+  .loading-icon { font-size: 40px; margin-bottom: 16px; }
+  .loading-title { font-size: 18px; font-weight: 600; color: #00ff9d; margin-bottom: 8px; }
+  .loading-sub { font-size: 14px; color: #555; }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(20,20,25,0.95);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 8px 16px;
+    display: flex; gap: 12px; align-items: center;
+    backdrop-filter: blur(10px);
+  }
+  .bottom-bar select {
+    background: transparent; border: none;
+    color: #888; font-size: 12px; outline: none; cursor: pointer;
+  }
+  .bottom-btn {
+    background: rgba(0,255,157,0.1);
+    border: 1px solid rgba(0,255,157,0.2);
+    border-radius: 6px; padding: 4px 12px;
+    color: #00ff9d; cursor: pointer; font-size: 12px;
+  }
+  .bottom-disconnect {
+    background: transparent; border: none;
+    color: #444; cursor: pointer; font-size: 12px;
+  }
+  .analyze-btn {
+    background: linear-gradient(135deg, #00ff9d, #00cc7a);
+    border: none; border-radius: 10px;
+    padding: 14px 32px; color: #000;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; margin-top: 20px;
+    display: block; margin-left: auto; margin-right: auto;
+  }
+
+  #data-view, #analysis-view { display: none; }
+  #connect-view { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">📡</div>
+  <div>
+    <div class="header-title">Meta Ads Intelligence</div>
+    <div class="header-sub">ניתוח קריאייטיבים יומי מבוסס AI</div>
+  </div>
+  <div class="nav-buttons" id="nav-buttons" style="display:none">
+    <button class="nav-btn active" id="btn-data" onclick="showView('data')">נתונים</button>
+    <button class="nav-btn green" id="btn-analysis" onclick="runAnalysis()">🤖 ניתוח AI</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- Connect -->
+  <div id="connect-view">
+    <div class="connect-panel">
+      <div class="connect-title">חיבור לחשבון מטה</div>
+      <div class="connect-sub">להשגת טוקן: developers.facebook.com/tools/explorer → ZOHARA ADS → ads_read → Generate Token</div>
+      <div class="error-box" id="error-box"></div>
+      <div class="field">
+        <label>Access Token</label>
+        <input type="password" id="token-input" placeholder="EAAxxxxxxxx...">
+      </div>
+      <div class="field">
+        <label>Ad Account ID</label>
+        <input type="text" id="account-input" placeholder="882300848610076" value="882300848610076">
+      </div>
+      <div class="field">
+        <label>תקופה</label>
+        <select id="date-select">
+          <option value="yesterday">אתמול</option>
+          <option value="last_7d" selected>7 ימים אחרונים</option>
+          <option value="last_14d">14 ימים אחרונים</option>
+          <option value="last_30d">30 ימים אחרונים</option>
+          <option value="this_month">חודש זה</option>
+          <option value="last_month">חודש שעבר</option>
+        </select>
+      </div>
+      <button class="btn-main" id="fetch-btn" onclick="fetchData()">🚀 שלוף נתונים</button>
+      <div class="security-note">🔒 הטוקן שלך נשמר רק בדפדפן ולא נשלח לשום שרת. הנתונים עוברים ישירות ממטה לדאשבורד.</div>
+    </div>
+  </div>
+
+  <!-- Data -->
+  <div id="data-view">
+    <div class="metrics-row" id="metrics-row"></div>
+    <div class="table-wrap">
+      <div class="table-head">
+        <div>קריאייטיב</div>
+        <div>אדסט</div>
+        <div class="cell-center">הוצאה</div>
+        <div class="cell-center">ROAS</div>
+        <div class="cell-center">CTR</div>
+        <div class="cell-center">CPC</div>
+        <div class="cell-center">רכישות</div>
+        <div class="cell-center">Freq</div>
+        <div class="cell-center">סטטוס</div>
+      </div>
+      <div id="ads-table"></div>
+    </div>
+    <button class="analyze-btn" onclick="runAnalysis()">🤖 קבל ניתוח AI מפורט</button>
+  </div>
+
+  <!-- Analysis -->
+  <div id="analysis-view">
+    <div class="analysis-panel">
+      <div class="analysis-header">
+        <div style="font-size:24px">🤖</div>
+        <div>
+          <div class="analysis-title">ניתוח AI - Meta Ads</div>
+          <div class="analysis-sub" id="analysis-sub">מנתח...</div>
+        </div>
+        <button onclick="showView('data')" style="margin-right:auto;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 14px;color:#888;cursor:pointer;font-size:12px;">← חזור לנתונים</button>
+      </div>
+      <div class="analysis-content" id="analysis-content">
+        <div class="loading-center">
+          <div class="loading-icon">🤖</div>
+          <div class="loading-title">מנתח את הקריאייטיבים שלך...</div>
+          <div class="loading-sub">זה ייקח כ-15 שניות</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar" id="bottom-bar" style="display:none">
+  <select id="bottom-date" onchange="changeDate()">
+    <option value="yesterday">אתמול</option>
+    <option value="last_7d" selected>7 ימים</option>
+    <option value="last_14d">14 ימים</option>
+    <option value="last_30d">30 ימים</option>
+  </select>
+  <button class="bottom-btn" onclick="fetchData()">🔄 רענן</button>
+  <button class="bottom-disconnect" onclick="disconnect()">התנתק</button>
+</div>
+
+<script>
+let adsData = [];
+let savedToken = '';
+let savedAccount = '';
+
+function fmt(n) {
+  const num = parseFloat(n) || 0;
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toFixed(0);
+}
+function fmtC(n) { return '₪' + fmt(n); }
+function fmtPct(n) { return (parseFloat(n) || 0).toFixed(2) + '%'; }
+function fmtR(n) { return (parseFloat(n) || 0).toFixed(2) + 'x'; }
+function roasColor(r) {
+  if (r >= 4) return '#00ff9d';
+  if (r >= 2) return '#ffcc00';
+  if (r >= 1) return '#ff9500';
+  return '#ff4444';
+}
+
+function showView(v) {
+  document.getElementById('connect-view').style.display = v === 'connect' ? 'block' : 'none';
+  document.getElementById('data-view').style.display = v === 'data' ? 'block' : 'none';
+  document.getElementById('analysis-view').style.display = v === 'analysis' ? 'block' : 'none';
+  document.getElementById('bottom-bar').style.display = v === 'connect' ? 'none' : 'flex';
+  document.getElementById('nav-buttons').style.display = v === 'connect' ? 'none' : 'flex';
+  document.getElementById('btn-data').classList.toggle('active', v === 'data');
+}
+
+function disconnect() {
+  adsData = [];
+  savedToken = '';
+  savedAccount = '';
+  showView('connect');
+}
+
+function changeDate() {
+  document.getElementById('date-select').value = document.getElementById('bottom-date').value;
+  fetchData();
+}
+
+async function fetchData() {
+  const token = document.getElementById('token-input').value || savedToken;
+  const account = document.getElementById('account-input').value || savedAccount;
+  const date = document.getElementById('date-select').value;
+
+  if (!token || !account) return;
+  savedToken = token;
+  savedAccount = account;
+
+  const btn = document.getElementById('fetch-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'טוען נתונים...'; }
+  document.getElementById('error-box') && (document.getElementById('error-box').style.display = 'none');
+
+  try {
+    const clean = account.replace('act_', '');
+    const fields = [
+      'ad_id','ad_name','adset_name','campaign_name',
+      'impressions','clicks','spend','reach','frequency',
+      'ctr','cpc','actions','action_values',
+      'inline_link_clicks','cost_per_action_type',
+      'video_play_actions','video_avg_time_watched_actions'
+    ].join(',');
+
+    const url = `https://graph.facebook.com/v19.0/act_${clean}/insights?` +
+      `fields=${encodeURIComponent(fields)}&` +
+      `date_preset=${date}&level=ad&limit=100&` +
+      `access_token=${token}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error.message);
+
+    const raw = data.data || [];
+    adsData = raw.map(ad => {
+      const getA = (type) => parseFloat((ad.actions || []).find(x => x.action_type === type)?.value || 0);
+      const getAV = (type) => parseFloat((ad.action_values || []).find(x => x.action_type === type)?.value || 0);
+      const spend = parseFloat(ad.spend || 0);
+      const purchases = getA('purchase');
+      const purchaseValue = getAV('purchase');
+      const leads = getA('lead');
+      const addToCart = getA('add_to_cart');
+      const checkouts = getA('initiate_checkout');
+      const landingViews = getA('landing_page_view');
+      const videoViews = getA('video_view');
+      const roas = spend > 0 && purchaseValue > 0 ? purchaseValue / spend : 0;
+      return {
+        ...ad,
+        spend, purchases, purchaseValue, leads, addToCart, checkouts, landingViews, videoViews,
+        roas,
+        ctr: parseFloat(ad.ctr || 0),
+        cpc: parseFloat(ad.cpc || 0),
+        impressions: parseInt(ad.impressions || 0),
+        clicks: parseInt(ad.clicks || 0),
+        reach: parseInt(ad.reach || 0),
+        frequency: parseFloat(ad.frequency || 0),
+      };
+    }).sort((a, b) => b.spend - a.spend);
+
+    renderMetrics();
+    renderTable();
+    showView('data');
+
+  } catch (e) {
+    const eb = document.getElementById('error-box');
+    if (eb) { eb.style.display = 'block'; eb.textContent = e.message || 'שגיאה בחיבור למטה'; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🚀 שלוף נתונים'; }
+  }
+}
+
+function renderMetrics() {
+  const totalSpend = adsData.reduce((s, a) => s + a.spend, 0);
+  const totalRev = adsData.reduce((s, a) => s + a.purchaseValue, 0);
+  const totalPurchases = adsData.reduce((s, a) => s + a.purchases, 0);
+  const overallRoas = totalSpend > 0 ? totalRev / totalSpend : 0;
+
+  document.getElementById('metrics-row').innerHTML = `
+    <div class="metric-card"><div class="metric-label">סה״כ הוצאה</div><div class="metric-value" style="color:#ff9500">${fmtC(totalSpend)}</div></div>
+    <div class="metric-card"><div class="metric-label">סה״כ הכנסה</div><div class="metric-value" style="color:#00ff9d">${fmtC(totalRev)}</div></div>
+    <div class="metric-card"><div class="metric-label">ROAS כולל</div><div class="metric-value" style="color:${roasColor(overallRoas)}">${fmtR(overallRoas)}</div></div>
+    <div class="metric-card"><div class="metric-label">רכישות</div><div class="metric-value" style="color:#00ccff">${totalPurchases.toFixed(0)}</div></div>
+    <div class="metric-card"><div class="metric-label">קריאייטיבים</div><div class="metric-value" style="color:#cc88ff">${adsData.length}</div><div class="metric-sub">פעילים</div></div>
+  `;
+}
+
+function renderTable() {
+  const rows = adsData.map(ad => {
+    const rc = roasColor(ad.roas);
+    const status = ad.roas >= 3 ? ['🟢 WIN','#00ff9d']
+      : ad.roas >= 1.5 ? ['🟡 OK','#ffcc00']
+      : ad.spend < 50 ? ['⚪ חדש','#888']
+      : ['🔴 STOP','#ff4444'];
+    const ctrColor = ad.ctr > 2 ? '#00ff9d' : ad.ctr > 1 ? '#ffcc00' : '#888';
+    const freqColor = ad.frequency > 4 ? '#ff4444' : '#888';
+    const conv = ad.purchases > 0 ? ad.purchases.toFixed(0) : ad.leads > 0 ? ad.leads.toFixed(0)+'L' : '—';
+    return `
+    <div class="table-row">
+      <div><div class="ad-name" title="${ad.ad_name}">${ad.ad_name}</div><div class="campaign-name">${ad.campaign_name}</div></div>
+      <div class="adset-name" title="${ad.adset_name}">${ad.adset_name}</div>
+      <div class="cell-center" style="font-size:13px;font-weight:600;color:#ff9500">₪${ad.spend.toFixed(0)}</div>
+      <div class="cell-center" style="font-size:14px;font-weight:700;color:${rc}">${ad.roas > 0 ? fmtR(ad.roas) : '—'}</div>
+      <div class="cell-center" style="font-size:13px;color:${ctrColor}">${fmtPct(ad.ctr)}</div>
+      <div class="cell-center" style="font-size:13px;color:#aaa">₪${ad.cpc.toFixed(2)}</div>
+      <div class="cell-center" style="font-size:13px;color:#00ccff">${conv}</div>
+      <div class="cell-center" style="font-size:13px;color:${freqColor}">${ad.frequency.toFixed(1)}</div>
+      <div class="cell-center"><span class="badge" style="background:${status[1]}22;color:${status[1]};border:1px solid ${status[1]}44">${status[0]}</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('ads-table').innerHTML = rows;
+}
+
+async function runAnalysis() {
+  if (!adsData.length) return;
+  showView('analysis');
+  document.getElementById('analysis-content').innerHTML = `
+    <div class="loading-center">
+      <div class="loading-icon">🤖</div>
+      <div class="loading-title">מנתח את הקריאייטיבים שלך...</div>
+      <div class="loading-sub">זה ייקח כ-15 שניות</div>
+    </div>`;
+
+  const topAds = adsData.slice(0, 20);
+  const totalSpend = adsData.reduce((s, a) => s + a.spend, 0);
+  const totalRev = adsData.reduce((s, a) => s + a.purchaseValue, 0);
+  const totalPurchases = adsData.reduce((s, a) => s + a.purchases, 0);
+  const overallRoas = totalSpend > 0 ? totalRev / totalSpend : 0;
+
+  const adsText = topAds.map(ad => `
+קריאייטיב: "${ad.ad_name}"
+אדסט: ${ad.adset_name} | קמפיין: ${ad.campaign_name}
+הוצאה: ₪${ad.spend.toFixed(0)} | הכנסה: ₪${ad.purchaseValue.toFixed(0)} | ROAS: ${ad.roas.toFixed(2)}x
+רכישות: ${ad.purchases} | CTR: ${ad.ctr.toFixed(2)}% | CPC: ₪${ad.cpc.toFixed(2)}
+חשיפות: ${ad.impressions.toLocaleString()} | Reach: ${ad.reach.toLocaleString()} | Frequency: ${ad.frequency.toFixed(1)}
+Add to Cart: ${ad.addToCart} | Checkouts: ${ad.checkouts} | Landing Views: ${ad.landingViews}
+Video Views: ${ad.videoViews}`).join('\n---\n');
+
+  const prompt = `אתה מומחה מדיה ממומנת בפייסבוק/מטה עם ניסיון רב בניתוח ביצועי קמפיינים.
+
+נתוני חשבון המודעות:
+סה"כ הוצאה: ₪${totalSpend.toFixed(0)}
+סה"כ הכנסה: ₪${totalRev.toFixed(0)}
+ROAS כולל: ${overallRoas.toFixed(2)}x
+סה"כ רכישות: ${totalPurchases}
+מספר קריאייטיבים: ${adsData.length}
+
+נתוני קריאייטיבים (לפי הוצאה):
+${adsText}
+
+ספק ניתוח מעמיק הכולל:
+
+## 🏆 הקריאייטיבים המנצחים
+מי עובד הכי טוב ולמה. מה הופך אותם לטובים.
+
+## 💀 הקריאייטיבים שצריך לעצור
+מה מפסיד כסף. מה הסימנים.
+
+## 📊 תובנות על הקהלים
+מה הנתונים מספרים על הקהלים לפי ביצועי האדסטים.
+
+## 🎯 5 פעולות מיידיות
+פעולות קונקרטיות — מה לעצור, מה לסקייל, מה לטסט.
+
+## 💡 רעיונות לקריאייטיבים חדשים
+בהשראת מה שעבד.
+
+## ⚠️ אזהרות וסיכונים
+Frequency גבוה, תקציב מרוכז, בעיות אחרות.
+
+כתוב בעברית, ישיר ופרקטי.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.find(c => c.type === 'text')?.text || 'לא ניתן לנתח.';
+
+    document.getElementById('analysis-sub').textContent = `מבוסס על ${adsData.length} קריאייטיבים`;
+    document.getElementById('analysis-content').innerHTML = renderAnalysisText(text);
+  } catch(e) {
+    document.getElementById('analysis-content').innerHTML = '<p style="color:#ff6666">שגיאה בניתוח. נסי שוב.</p>';
+  }
+}
+
+function renderAnalysisText(text) {
+  return text.split('\n').map(line => {
+    if (line.startsWith('## ')) return `<div class="analysis-h2">${line.replace('## ','')}</div>`;
+    if (line.trim() === '') return '<div style="height:8px"></div>';
+    return `<div class="analysis-p">${line}</div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
