@@ -6,21 +6,36 @@
 <title>Meta Ads Dashboard</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a0f;--card:#12121a;--border:#1e1e2e;--accent:#00ff9d;--text:#e0e0e0;--dim:#888;--red:#ff4d6a;--yellow:#ffd700;--green:#00ff9d}
+:root{
+  --bg:#0a0a0f;
+  --card:#12121a;
+  --surface:#1a1a2e;
+  --border:#1e1e2e;
+  --accent:#00ff9d;
+  --text:#e0e0e0;
+  --dim:#888;
+  --red:#ff4d6a;
+  --yellow:#ffd700;
+  --green:#00ff9d;
+  --purple:#a78bfa;
+}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh}
 a{color:var(--accent);text-decoration:none}
+.hidden{display:none!important}
 
-/* Login */
-.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1000}
-.login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:90%;max-width:420px;text-align:center}
+/* ===== Login ===== */
+.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:92%;max-width:420px;text-align:center}
 .login-box h1{color:var(--accent);margin-bottom:8px;font-size:24px}
-.login-box p{color:var(--dim);margin-bottom:24px;font-size:14px}
-.login-box input{width:100%;padding:12px 16px;margin-bottom:12px;background:#1a1a2e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;direction:ltr;text-align:left}
+.login-box .sub{color:var(--dim);margin-bottom:24px;font-size:14px}
+.login-box input{width:100%;padding:12px 16px;margin-bottom:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;direction:ltr;text-align:left}
 .login-box input::placeholder{color:#555}
-.login-box button{width:100%;padding:12px;background:var(--accent);color:#000;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;transition:.2s}
+.login-box button{width:100%;padding:12px;background:var(--accent);color:#000;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s}
 .login-box button:hover{opacity:.85}
+.login-box .helper{margin-top:12px;font-size:11px;color:var(--dim)}
+.login-box .helper a{color:var(--accent);font-size:11px}
 
-/* Top bar */
+/* ===== Top Bar ===== */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
 .topbar h1{font-size:20px;color:var(--accent)}
 .topbar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -28,32 +43,30 @@ a{color:var(--accent);text-decoration:none}
 .topbar-actions button.primary{background:var(--accent);color:#000;border:none;font-weight:700}
 .topbar-actions button:hover{opacity:.85}
 
-/* Metrics */
+/* ===== Metrics ===== */
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:20px 24px}
 .metric-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
 .metric-card .label{font-size:12px;color:var(--dim);margin-bottom:4px}
 .metric-card .value{font-size:22px;font-weight:700;color:var(--accent)}
 
-/* View toggle */
+/* ===== View Toggle ===== */
 .view-toggle{display:flex;gap:8px;padding:0 24px 12px;justify-content:flex-start}
-.view-toggle button{padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--dim);cursor:pointer;font-size:13px}
+.view-toggle button{padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--dim);cursor:pointer;font-size:13px;transition:.15s}
 .view-toggle button.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
 
-/* Grid */
+/* ===== Cards Grid ===== */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:0 24px 24px}
-
-/* Card */
 .ad-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}
 .ad-card:hover{transform:translateY(-3px);border-color:var(--accent)}
-.ad-card .thumb{width:100%;height:180px;object-fit:cover;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--dim)}
+.ad-card .thumb{width:100%;height:180px;object-fit:cover;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--dim);overflow:hidden}
 .ad-card .thumb img{width:100%;height:100%;object-fit:cover}
 .ad-card .badge-status{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;backdrop-filter:blur(8px)}
+.ad-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}
+.ad-card .badge-carousel{position:absolute;top:42px;left:10px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.75);color:#fff;backdrop-filter:blur(8px)}
 .badge-win{background:rgba(0,255,157,.2);color:var(--green)}
 .badge-ok{background:rgba(255,215,0,.2);color:var(--yellow)}
 .badge-stop{background:rgba(255,77,106,.2);color:var(--red)}
 .badge-new{background:rgba(255,255,255,.15);color:#ccc}
-.ad-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.6);color:#fff;backdrop-filter:blur(8px)}
-.ad-card .badge-carousel{position:absolute;top:42px;left:10px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.7);color:#fff;backdrop-filter:blur(8px)}
 .ad-card .info{padding:14px}
 .ad-card .info .name{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ad-card .info .adset{font-size:11px;color:var(--dim);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -61,82 +74,91 @@ a{color:var(--accent);text-decoration:none}
 .ad-card .info .stats .stat{font-size:12px}
 .ad-card .info .stats .stat span{color:var(--dim)}
 
-/* Table */
+/* ===== Table ===== */
 .table-wrap{padding:0 24px 24px;overflow-x:auto}
 .table-wrap table{width:100%;border-collapse:collapse;font-size:13px}
-.table-wrap th{background:var(--card);padding:10px 12px;text-align:right;color:var(--dim);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+.table-wrap th{background:var(--card);padding:10px 12px;text-align:right;color:var(--dim);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
 .table-wrap td{padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
 .table-wrap tr:hover{background:rgba(0,255,157,.03)}
-.table-wrap .thumb-cell{width:50px;height:50px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#1a1a2e;font-size:20px;position:relative}
+.table-wrap .thumb-cell{width:50px;height:50px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--surface);font-size:20px;position:relative}
 .table-wrap .thumb-cell img{width:100%;height:100%;object-fit:cover}
-.table-wrap .carousel-mini{position:absolute;bottom:2px;left:2px;font-size:8px;background:rgba(120,80,255,.8);color:#fff;padding:1px 4px;border-radius:4px;font-weight:700}
+.table-wrap .carousel-mini{position:absolute;bottom:2px;left:2px;font-size:8px;background:rgba(120,80,255,.85);color:#fff;padding:1px 4px;border-radius:4px;font-weight:700}
 
-/* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
+/* ===== Modal ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.show{display:flex}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;position:relative}
-.modal .close-btn{position:absolute;top:12px;left:12px;background:none;border:none;color:var(--dim);font-size:24px;cursor:pointer;z-index:10}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:720px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;position:relative}
+.modal .close-btn{position:absolute;top:12px;left:12px;background:none;border:none;color:var(--dim);font-size:28px;cursor:pointer;z-index:10;line-height:1}
 .modal .close-btn:hover{color:var(--text)}
-.modal .modal-img{width:100%;max-height:300px;object-fit:contain;border-radius:8px;margin-bottom:16px;background:#1a1a2e}
+.modal .modal-img{width:100%;max-height:300px;object-fit:contain;border-radius:8px;margin-bottom:16px;background:var(--surface)}
 .modal .modal-title{font-size:18px;font-weight:700;margin-bottom:4px}
 .modal .modal-sub{font-size:13px;color:var(--dim);margin-bottom:16px}
-.modal .modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.modal .modal-stats .ms{background:#1a1a2e;padding:12px;border-radius:8px}
+.modal .modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.modal .modal-stats .ms{background:var(--surface);padding:12px;border-radius:8px}
 .modal .modal-stats .ms .ms-label{font-size:11px;color:var(--dim)}
 .modal .modal-stats .ms .ms-value{font-size:18px;font-weight:700}
-.modal .ad-preview-wrap{margin:16px 0;border-radius:8px;overflow:hidden;background:#fff;min-height:100px;position:relative}
-.modal .ad-preview-wrap iframe{width:100%;min-height:400px;border:none}
-.modal .ad-preview-wrap .preview-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);background:#1a1a2e;font-size:13px}
-.modal .preview-label{font-size:12px;color:var(--dim);margin-bottom:6px;margin-top:16px}
+.preview-label{font-size:12px;color:var(--dim);margin-bottom:6px;margin-top:8px}
+.ad-preview-wrap{border-radius:8px;overflow:hidden;background:#fff;min-height:80px;position:relative}
+.ad-preview-wrap iframe{width:100%;min-height:420px;border:none}
+.ad-preview-wrap .pv-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);background:var(--surface);font-size:13px}
 
-/* Analysis */
+/* ===== Analysis ===== */
+.analysis-btn{display:block;margin:0 24px 16px;padding:14px 24px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;width:calc(100% - 48px);transition:opacity .2s}
+.analysis-btn:hover{opacity:.85}
+.analysis-btn:disabled{opacity:.5;cursor:not-allowed}
 .analysis-section{padding:0 24px 24px}
 .analysis-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
 .analysis-box h3{color:var(--accent);margin-bottom:12px}
-.analysis-box .analysis-content{white-space:pre-wrap;line-height:1.7;font-size:14px}
-.analysis-btn{display:block;margin:0 24px 16px;padding:12px 24px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;width:calc(100% - 48px)}
-.analysis-btn:hover{opacity:.85}
-.analysis-btn:disabled{opacity:.5;cursor:not-allowed}
+.analysis-box .analysis-content{white-space:pre-wrap;line-height:1.8;font-size:14px}
 
-/* Loading */
+/* ===== Loading ===== */
 .loading{text-align:center;padding:60px;color:var(--dim);font-size:16px}
-.spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin-left:8px;vertical-align:middle}
+.spinner{display:inline-block;width:22px;height:22px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin-left:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Bottom bar */
+/* ===== Bottom Bar ===== */
 .bottombar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:50;flex-wrap:wrap}
-.bottombar select,.bottombar button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#1a1a2e;color:var(--text);font-size:13px;cursor:pointer}
+.bottombar select,.bottombar button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;cursor:pointer}
 .bottombar button.danger{color:var(--red);border-color:rgba(255,77,106,.3)}
 .bottombar button.primary{background:var(--accent);color:#000;border:none;font-weight:700}
-.main-content{padding-bottom:60px}
-.hidden{display:none!important}
+.main-content{padding-bottom:65px}
 
-/* Responsive */
+/* ===== Sort ===== */
+.sort-bar{padding:0 24px 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sort-bar label{font-size:12px;color:var(--dim)}
+.sort-bar select{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:12px;cursor:pointer}
+
+/* ===== Responsive ===== */
 @media(max-width:600px){
   .metrics{grid-template-columns:1fr 1fr}
   .grid{grid-template-columns:1fr}
   .topbar{padding:12px 16px}
   .topbar h1{font-size:16px}
+  .modal{padding:16px}
+  .modal .modal-stats{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- Login Overlay -->
+<!-- ===== LOGIN ===== -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
     <h1>Meta Ads Dashboard</h1>
-    <p>הזן את פרטי החיבור לחשבון המטא שלך</p>
-    <input type="password" id="tokenInput" placeholder="Access Token">
-    <input type="text" id="accountInput" placeholder="Ad Account ID" value="882300848610076">
-    <input type="password" id="claudeKeyInput" placeholder="Claude API Key">
-    <input type="text" id="workerUrlInput" placeholder="Cloudflare Worker URL (למשל: https://claude-proxy.xxx.workers.dev)">
+    <div class="sub">הזיני את פרטי החיבור לחשבון המטא</div>
+    <input type="password" id="inputToken" placeholder="Meta Access Token">
+    <input type="text" id="inputAccount" placeholder="Ad Account ID" value="882300848610076">
+    <input type="password" id="inputClaudeKey" placeholder="Claude API Key (אופציונלי)">
+    <input type="text" id="inputWorkerUrl" placeholder="Cloudflare Worker URL (אופציונלי)">
     <button onclick="doLogin()">התחבר</button>
+    <div class="helper">
+      קבלי טוקן מ-<a href="https://developers.facebook.com/tools/explorer/" target="_blank">Meta Graph API Explorer</a>
+    </div>
   </div>
 </div>
 
-<!-- Top Bar -->
-<div class="topbar" id="topbar" style="display:none">
+<!-- ===== TOP BAR ===== -->
+<div class="topbar hidden" id="topbar">
   <h1>Meta Ads Dashboard</h1>
   <div class="topbar-actions">
     <select id="periodSelect">
@@ -152,34 +174,36 @@ a{color:var(--accent);text-decoration:none}
   </div>
 </div>
 
-<!-- Main Content -->
+<!-- ===== MAIN ===== -->
 <div class="main-content hidden" id="mainContent">
-  <!-- Metrics -->
   <div class="metrics" id="metricsBar"></div>
-
-  <!-- View Toggle -->
   <div class="view-toggle">
     <button class="active" id="btnCards" onclick="setView('cards')">כרטיסים</button>
     <button id="btnTable" onclick="setView('table')">טבלה</button>
   </div>
-
-  <!-- Cards Grid -->
+  <div class="sort-bar">
+    <label>מיון:</label>
+    <select id="sortSelect" onchange="applySort()">
+      <option value="spend_desc">הוצאה (גבוה→נמוך)</option>
+      <option value="spend_asc">הוצאה (נמוך→גבוה)</option>
+      <option value="roas_desc">ROAS (גבוה→נמוך)</option>
+      <option value="roas_asc">ROAS (נמוך→גבוה)</option>
+      <option value="purchases_desc">המרות (גבוה→נמוך)</option>
+      <option value="ctr_desc">CTR (גבוה→נמוך)</option>
+    </select>
+  </div>
   <div class="grid" id="cardsGrid"></div>
-
-  <!-- Table -->
   <div class="table-wrap hidden" id="tableWrap"></div>
-
-  <!-- Analysis -->
   <button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח Claude AI</button>
   <div class="analysis-section hidden" id="analysisSection">
     <div class="analysis-box">
-      <h3>ניתוח Claude AI</h3>
+      <h3>🤖 ניתוח Claude AI</h3>
       <div class="analysis-content" id="analysisContent"></div>
     </div>
   </div>
 </div>
 
-<!-- Modal -->
+<!-- ===== MODAL ===== -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal" id="modalBox">
     <button class="close-btn" onclick="document.getElementById('modalOverlay').classList.remove('show')">&times;</button>
@@ -187,7 +211,7 @@ a{color:var(--accent);text-decoration:none}
   </div>
 </div>
 
-<!-- Bottom Bar -->
+<!-- ===== BOTTOM BAR ===== -->
 <div class="bottombar hidden" id="bottomBar">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <select id="periodSelectBottom">
@@ -204,26 +228,33 @@ a{color:var(--accent);text-decoration:none}
   <button class="danger" onclick="doLogout()">🚪 התנתק</button>
 </div>
 
+<!-- ======================================================
+     SINGLE SCRIPT BLOCK — ALL FUNCTIONS GLOBAL
+     ====================================================== -->
 <script>
-/* =========================================
-   META ADS DASHBOARD - Complete Rewrite
-   All functions global, single script block
-   ========================================= */
+/* ===========================================
+   META ADS DASHBOARD — FULL REWRITE
+   All functions are global (no modules).
+   =========================================== */
 
+/* ---------- Global State ---------- */
 var TOKEN = '';
 var ACCOUNT_ID = '';
 var CLAUDE_KEY = '';
 var WORKER_URL = '';
 var adsData = [];
 var currentView = 'cards';
+var META_API = 'https://graph.facebook.com/v19.0';
 
-/* ---- Login / Logout ---- */
+/* ============================================
+   1. LOGIN / LOGOUT / SESSION
+   ============================================ */
 
 function doLogin() {
-  var t = document.getElementById('tokenInput').value.trim();
-  var a = document.getElementById('accountInput').value.trim();
-  var c = document.getElementById('claudeKeyInput').value.trim();
-  var w = document.getElementById('workerUrlInput').value.trim().replace(/\/+$/, '');
+  var t = document.getElementById('inputToken').value.trim();
+  var a = document.getElementById('inputAccount').value.trim();
+  var c = document.getElementById('inputClaudeKey').value.trim();
+  var w = document.getElementById('inputWorkerUrl').value.trim().replace(/\/+$/, '');
   if (!t) { alert('יש להזין Access Token'); return; }
   if (!a) { alert('יש להזין Ad Account ID'); return; }
   TOKEN = t;
@@ -234,10 +265,7 @@ function doLogin() {
   sessionStorage.setItem('meta_account', a);
   if (c) sessionStorage.setItem('claude_key', c);
   if (w) sessionStorage.setItem('worker_url', w);
-  document.getElementById('loginOverlay').style.display = 'none';
-  document.getElementById('topbar').style.display = '';
-  document.getElementById('mainContent').classList.remove('hidden');
-  document.getElementById('bottomBar').classList.remove('hidden');
+  showApp();
   fetchData();
 }
 
@@ -249,177 +277,211 @@ function doLogout() {
   WORKER_URL = '';
   adsData = [];
   document.getElementById('loginOverlay').style.display = '';
-  document.getElementById('topbar').style.display = 'none';
+  document.getElementById('topbar').classList.add('hidden');
   document.getElementById('mainContent').classList.add('hidden');
   document.getElementById('bottomBar').classList.add('hidden');
-  document.getElementById('tokenInput').value = '';
-  document.getElementById('claudeKeyInput').value = '';
+  document.getElementById('analysisSection').classList.add('hidden');
+  document.getElementById('inputToken').value = '';
+  document.getElementById('inputClaudeKey').value = '';
+  document.getElementById('inputWorkerUrl').value = '';
 }
 
-/* ---- Restore session ---- */
+function showApp() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('topbar').classList.remove('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('bottomBar').classList.remove('hidden');
+}
 
-(function restoreSession() {
+function restoreSession() {
   var t = sessionStorage.getItem('meta_token');
   var a = sessionStorage.getItem('meta_account');
-  var c = sessionStorage.getItem('claude_key');
-  var w = sessionStorage.getItem('worker_url');
-  if (t && a) {
-    TOKEN = t;
-    ACCOUNT_ID = a;
-    CLAUDE_KEY = c || '';
-    WORKER_URL = w || '';
-    document.getElementById('tokenInput').value = t;
-    document.getElementById('accountInput').value = a;
-    if (c) document.getElementById('claudeKeyInput').value = c;
-    if (w) document.getElementById('workerUrlInput').value = w;
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('topbar').style.display = '';
-    document.getElementById('mainContent').classList.remove('hidden');
-    document.getElementById('bottomBar').classList.remove('hidden');
-    fetchData();
-  }
-})();
+  if (!t || !a) return;
+  TOKEN = t;
+  ACCOUNT_ID = a;
+  CLAUDE_KEY = sessionStorage.getItem('claude_key') || '';
+  WORKER_URL = sessionStorage.getItem('worker_url') || '';
+  document.getElementById('inputToken').value = t;
+  document.getElementById('inputAccount').value = a;
+  if (CLAUDE_KEY) document.getElementById('inputClaudeKey').value = CLAUDE_KEY;
+  if (WORKER_URL) document.getElementById('inputWorkerUrl').value = WORKER_URL;
+  showApp();
+  fetchData();
+}
 
-/* ---- Sync period selects ---- */
+/* ============================================
+   2. SYNC PERIOD SELECTORS
+   ============================================ */
 
-document.getElementById('periodSelect').addEventListener('change', function() {
-  document.getElementById('periodSelectBottom').value = this.value;
-});
-document.getElementById('periodSelectBottom').addEventListener('change', function() {
-  document.getElementById('periodSelect').value = this.value;
-});
+function syncPeriods() {
+  var top = document.getElementById('periodSelect');
+  var bot = document.getElementById('periodSelectBottom');
+  top.addEventListener('change', function() { bot.value = top.value; });
+  bot.addEventListener('change', function() { top.value = bot.value; });
+}
 
-/* ---- Get Creative Image (handles all ad types) ---- */
+/* ============================================
+   3. IMAGE PIPELINE — handles all ad types
+   ============================================ */
 
 function getCreativeImage(creative) {
-  // Single image/video — thumbnail_url works
+  /* Priority 1: carousel — check object_story_spec first */
+  var spec = creative.object_story_spec || null;
+  if (spec) {
+    var linkData = spec.link_data || null;
+    if (linkData && linkData.child_attachments && linkData.child_attachments.length > 0) {
+      var kids = linkData.child_attachments;
+      var pic = kids[0].picture || kids[0].image_url || null;
+      return { src: pic, type: 'carousel', count: kids.length };
+    }
+  }
+
+  /* Priority 2: single image/video — thumbnail_url */
   if (creative.thumbnail_url) {
     return { src: creative.thumbnail_url, type: 'single', count: 0 };
   }
-  // Carousel — get first card image
-  var spec = creative.object_story_spec;
-  if (spec && spec.link_data && spec.link_data.child_attachments) {
-    var kids = spec.link_data.child_attachments;
-    if (kids.length > 0) {
-      var pic = kids[0].picture || kids[0].image_url || '';
-      return { src: pic || null, type: 'carousel', count: kids.length };
-    }
-  }
-  // Fallback — image_url
+
+  /* Priority 3: fallback — image_url */
   if (creative.image_url) {
     return { src: creative.image_url, type: 'single', count: 0 };
   }
+
   return { src: null, type: 'unknown', count: 0 };
 }
 
-/* ---- Fetch Data ---- */
+/* ============================================
+   4. FETCH DATA — Main data pipeline
+   ============================================ */
 
 function fetchData() {
+  if (!TOKEN || !ACCOUNT_ID) return;
+
   var period = document.getElementById('periodSelect').value;
-  var insightsUrl = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/insights'
+  var url = META_API + '/act_' + ACCOUNT_ID + '/insights'
     + '?fields=ad_id,ad_name,adset_name,campaign_name,impressions,clicks,spend,reach,frequency,ctr,cpc,actions,action_values'
     + '&level=ad&date_preset=' + period
     + '&limit=200&access_token=' + TOKEN;
 
+  /* Show loading */
   document.getElementById('cardsGrid').innerHTML = '<div class="loading"><span class="spinner"></span> טוען נתונים מ-Meta...</div>';
   document.getElementById('tableWrap').innerHTML = '';
   document.getElementById('metricsBar').innerHTML = '';
+  document.getElementById('analysisSection').classList.add('hidden');
 
-  fetch(insightsUrl)
-    .then(function(r) { return r.json(); })
-    .then(function(json) {
-      if (json.error) {
-        document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאה: ' + escHtml(json.error.message) + '</div>';
-        return;
-      }
-      var data = json.data || [];
-      if (data.length === 0) {
+  fetchAllPages(url, [])
+    .then(function(allData) {
+      if (allData.length === 0) {
         document.getElementById('cardsGrid').innerHTML = '<div class="loading">אין נתונים לתקופה הנבחרת</div>';
         return;
       }
-      adsData = data.map(parseAd);
-
-      // Step 1: Batch fetch creative IDs for all ads
-      var adIds = adsData.map(function(ad) { return ad.id; }).filter(Boolean);
-      if (adIds.length === 0) {
-        renderMetrics(); renderCards(); renderTable();
-        return;
-      }
-
-      var filterParam = encodeURIComponent('[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]');
-      var adsUrl = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/ads'
-        + '?fields=id,creative{id}&filtering=' + filterParam
-        + '&limit=200&access_token=' + TOKEN;
-
-      return fetch(adsUrl)
-        .then(function(r) { return r.json(); })
-        .then(function(adsJson) {
-          if (adsJson.data) {
-            adsJson.data.forEach(function(adObj) {
-              if (adObj.creative && adObj.creative.id) {
-                adsData.forEach(function(ad) {
-                  if (ad.id === adObj.id) ad.creativeId = adObj.creative.id;
-                });
-              }
-            });
-          }
-          // Step 2: Fetch creative details with full fields for image extraction
-          var imgPromises = adsData.map(function(ad) {
-            if (!ad.creativeId) return Promise.resolve();
-            return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
-              + '?fields=thumbnail_url,image_url,object_story_spec,object_type'
-              + '&thumbnail_width=600&thumbnail_height=600'
-              + '&access_token=' + TOKEN)
-              .then(function(r) { return r.json(); })
-              .then(function(creative) {
-                var img = getCreativeImage(creative);
-                ad.thumbnail = img.src || '';
-                ad.creativeType = img.type;
-                ad.carouselCount = img.count;
-                ad.objectType = creative.object_type || '';
-              })
-              .catch(function() {
-                ad.thumbnail = '';
-                ad.creativeType = 'unknown';
-                ad.carouselCount = 0;
-              });
-          });
-          return Promise.all(imgPromises);
-        })
-        .catch(function() { /* skip images on error */ });
+      adsData = allData.map(parseAd);
+      return fetchCreativeImages();
     })
     .then(function() {
       if (adsData.length > 0) {
-        renderMetrics();
-        renderCards();
-        renderTable();
+        applySort();
       }
     })
     .catch(function(err) {
-      document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאת רשת: ' + escHtml(err.message) + '</div>';
+      document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאה: ' + esc(err.message || String(err)) + '</div>';
     });
 }
 
-/* ---- Parse ad data ---- */
+/* Fetch all pages of paginated results */
+function fetchAllPages(url, accumulated) {
+  return fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (json.error) throw new Error(json.error.message || 'Meta API error');
+      var data = json.data || [];
+      var all = accumulated.concat(data);
+      if (json.paging && json.paging.next) {
+        return fetchAllPages(json.paging.next, all);
+      }
+      return all;
+    });
+}
 
-function parseAd(ad) {
-  var spend = parseFloat(ad.spend) || 0;
+/* ============================================
+   5. FETCH CREATIVE IMAGES (batch)
+   ============================================ */
+
+function fetchCreativeImages() {
+  var adIds = adsData.map(function(a) { return a.id; }).filter(Boolean);
+  if (adIds.length === 0) return Promise.resolve();
+
+  /* Step 1: get creative IDs for all ads */
+  var filterParam = encodeURIComponent('[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]');
+  var adsUrl = META_API + '/act_' + ACCOUNT_ID + '/ads'
+    + '?fields=id,creative{id}&filtering=' + filterParam
+    + '&limit=200&access_token=' + TOKEN;
+
+  return fetch(adsUrl)
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (!json.data) return;
+      /* Map creative IDs back to adsData */
+      var creativeMap = {};
+      json.data.forEach(function(obj) {
+        if (obj.creative && obj.creative.id) {
+          creativeMap[obj.id] = obj.creative.id;
+        }
+      });
+      adsData.forEach(function(ad) {
+        if (creativeMap[ad.id]) ad.creativeId = creativeMap[ad.id];
+      });
+
+      /* Step 2: fetch creative details (thumbnail_url, object_story_spec, etc.) */
+      var promises = adsData.map(function(ad) {
+        if (!ad.creativeId) return Promise.resolve();
+        var cUrl = META_API + '/' + ad.creativeId
+          + '?fields=thumbnail_url,image_url,object_story_spec,object_type'
+          + '&thumbnail_width=600&thumbnail_height=600'
+          + '&access_token=' + TOKEN;
+        return fetch(cUrl)
+          .then(function(r) { return r.json(); })
+          .then(function(creative) {
+            var img = getCreativeImage(creative);
+            ad.thumbnail = img.src || '';
+            ad.creativeType = img.type;
+            ad.carouselCount = img.count || 0;
+            ad.objectType = creative.object_type || '';
+          })
+          .catch(function() {
+            ad.thumbnail = '';
+            ad.creativeType = 'unknown';
+            ad.carouselCount = 0;
+          });
+      });
+      return Promise.all(promises);
+    })
+    .catch(function() { /* skip image errors silently */ });
+}
+
+/* ============================================
+   6. PARSE AD DATA
+   ============================================ */
+
+function parseAd(raw) {
+  var spend = parseFloat(raw.spend) || 0;
   var purchases = 0;
   var revenue = 0;
-  if (ad.actions) {
-    ad.actions.forEach(function(a) {
+
+  if (raw.actions) {
+    raw.actions.forEach(function(a) {
       if (a.action_type === 'purchase' || a.action_type === 'offsite_conversion.fb_pixel_purchase') {
         purchases += parseInt(a.value) || 0;
       }
     });
   }
-  if (ad.action_values) {
-    ad.action_values.forEach(function(a) {
+  if (raw.action_values) {
+    raw.action_values.forEach(function(a) {
       if (a.action_type === 'purchase' || a.action_type === 'offsite_conversion.fb_pixel_purchase') {
         revenue += parseFloat(a.value) || 0;
       }
     });
   }
+
   var roas = spend > 0 ? revenue / spend : 0;
   var status = 'new';
   if (spend >= 50) {
@@ -427,18 +489,19 @@ function parseAd(ad) {
     else if (roas >= 1.5) status = 'ok';
     else status = 'stop';
   }
+
   return {
-    id: ad.ad_id,
-    name: ad.ad_name || 'ללא שם',
-    adset: ad.adset_name || '',
-    campaign: ad.campaign_name || '',
+    id: raw.ad_id,
+    name: raw.ad_name || 'ללא שם',
+    adset: raw.adset_name || '',
+    campaign: raw.campaign_name || '',
     spend: spend,
-    impressions: parseInt(ad.impressions) || 0,
-    clicks: parseInt(ad.clicks) || 0,
-    reach: parseInt(ad.reach) || 0,
-    frequency: parseFloat(ad.frequency) || 0,
-    ctr: parseFloat(ad.ctr) || 0,
-    cpc: parseFloat(ad.cpc) || 0,
+    impressions: parseInt(raw.impressions) || 0,
+    clicks: parseInt(raw.clicks) || 0,
+    reach: parseInt(raw.reach) || 0,
+    frequency: parseFloat(raw.frequency) || 0,
+    ctr: parseFloat(raw.ctr) || 0,
+    cpc: parseFloat(raw.cpc) || 0,
     purchases: purchases,
     revenue: revenue,
     roas: roas,
@@ -451,7 +514,30 @@ function parseAd(ad) {
   };
 }
 
-/* ---- Render Metrics ---- */
+/* ============================================
+   7. SORT
+   ============================================ */
+
+function applySort() {
+  var val = document.getElementById('sortSelect').value;
+  var parts = val.split('_');
+  var field = parts[0];
+  var dir = parts[parts.length - 1]; /* 'asc' or 'desc' */
+
+  adsData.sort(function(a, b) {
+    var va = a[field] || 0;
+    var vb = b[field] || 0;
+    return dir === 'desc' ? (vb - va) : (va - vb);
+  });
+
+  renderMetrics();
+  renderCards();
+  renderTable();
+}
+
+/* ============================================
+   8. RENDER METRICS
+   ============================================ */
 
 function renderMetrics() {
   var totalSpend = 0, totalRevenue = 0, totalPurchases = 0;
@@ -461,85 +547,106 @@ function renderMetrics() {
     totalPurchases += ad.purchases;
   });
   var totalRoas = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : '0';
-  var html = ''
-    + metricHtml('הוצאה כוללת', formatCurrency(totalSpend))
-    + metricHtml('הכנסה כוללת', formatCurrency(totalRevenue))
-    + metricHtml('ROAS כולל', totalRoas + 'x')
-    + metricHtml('רכישות', totalPurchases.toLocaleString())
-    + metricHtml('קריאייטיבים', adsData.length.toString());
-  document.getElementById('metricsBar').innerHTML = html;
+  document.getElementById('metricsBar').innerHTML =
+    metricBox('הוצאה כוללת', formatNIS(totalSpend))
+    + metricBox('הכנסה כוללת', formatNIS(totalRevenue))
+    + metricBox('ROAS כולל', totalRoas + 'x')
+    + metricBox('רכישות', totalPurchases.toLocaleString())
+    + metricBox('קריאייטיבים', adsData.length.toString());
 }
 
-function metricHtml(label, value) {
+function metricBox(label, value) {
   return '<div class="metric-card"><div class="label">' + label + '</div><div class="value">' + value + '</div></div>';
 }
 
-/* ---- Render Cards ---- */
+/* ============================================
+   9. RENDER CARDS
+   ============================================ */
 
 function renderCards() {
+  if (adsData.length === 0) {
+    document.getElementById('cardsGrid').innerHTML = '<div class="loading">אין נתונים</div>';
+    return;
+  }
   var html = '';
   adsData.forEach(function(ad, i) {
-    var statusBadge = getStatusBadge(ad.status);
+    var sb = statusBadge(ad.status);
     var thumbHtml = ad.thumbnail
-      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="creative" onerror="this.parentNode.innerHTML=\'&#x1f5bc;&#xfe0f;\'">'
-      : '\uD83D\uDDBC\uFE0F';
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
+      : '🖼️';
     var carouselBadge = '';
     if (ad.creativeType === 'carousel' && ad.carouselCount > 0) {
-      carouselBadge = '<div class="badge-carousel">\uD83C\uDFA0 x' + ad.carouselCount + '</div>';
+      carouselBadge = '<div class="badge-carousel">🎠 x' + ad.carouselCount + '</div>';
     }
     html += '<div class="ad-card" onclick="openModal(' + i + ')">'
       + '<div class="thumb">' + thumbHtml + '</div>'
-      + '<div class="badge-status ' + statusBadge.cls + '">' + statusBadge.text + '</div>'
+      + '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>'
       + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
       + carouselBadge
       + '<div class="info">'
-      + '<div class="name" title="' + escAttr(ad.name) + '">' + escHtml(ad.name) + '</div>'
-      + '<div class="adset" title="' + escAttr(ad.adset) + '">' + escHtml(ad.adset) + '</div>'
+      + '<div class="name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
+      + '<div class="adset" title="' + escAttr(ad.adset) + '">' + esc(ad.adset) + '</div>'
       + '<div class="stats">'
-      + '<div class="stat"><span>הוצאה: </span>' + formatCurrency(ad.spend) + '</div>'
-      + '<div class="stat"><span>CTR: </span>' + ad.ctr.toFixed(2) + '%</div>'
-      + '<div class="stat"><span>המרות: </span>' + ad.purchases + '</div>'
-      + '<div class="stat"><span>Freq: </span>' + ad.frequency.toFixed(2) + '</div>'
+      + statCell('הוצאה', formatNIS(ad.spend))
+      + statCell('CTR', ad.ctr.toFixed(2) + '%')
+      + statCell('המרות', String(ad.purchases))
+      + statCell('Freq', ad.frequency.toFixed(2))
       + '</div></div></div>';
   });
-  document.getElementById('cardsGrid').innerHTML = html || '<div class="loading">אין נתונים</div>';
+  document.getElementById('cardsGrid').innerHTML = html;
 }
 
-/* ---- Render Table ---- */
+function statCell(label, value) {
+  return '<div class="stat"><span>' + label + ': </span>' + value + '</div>';
+}
+
+/* ============================================
+   10. RENDER TABLE
+   ============================================ */
 
 function renderTable() {
   var html = '<table><thead><tr>'
-    + '<th></th><th>קריאייטיב</th><th>סוג</th><th>אדסט</th><th>הוצאה</th><th>ROAS</th><th>CTR</th><th>CPC</th><th>Freq</th><th>המרות</th><th>סטטוס</th>'
+    + '<th></th><th>קריאייטיב</th><th>סוג</th><th>אדסט</th>'
+    + '<th>הוצאה</th><th>הכנסה</th><th>ROAS</th><th>CTR</th><th>CPC</th>'
+    + '<th>Freq</th><th>המרות</th><th>סטטוס</th>'
     + '</tr></thead><tbody>';
+
   adsData.forEach(function(ad, i) {
-    var statusBadge = getStatusBadge(ad.status);
+    var sb = statusBadge(ad.status);
     var thumbHtml = ad.thumbnail
-      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" onerror="this.parentNode.innerHTML=\'&#x1f5bc;&#xfe0f;\'">'
-      : '\uD83D\uDDBC\uFE0F';
-    var carouselMini = '';
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
+      : '🖼️';
+    var miniCarousel = '';
     if (ad.creativeType === 'carousel' && ad.carouselCount > 0) {
-      carouselMini = '<span class="carousel-mini">\uD83C\uDFA0' + ad.carouselCount + '</span>';
+      miniCarousel = '<span class="carousel-mini">🎠' + ad.carouselCount + '</span>';
     }
-    var typeLabel = ad.creativeType === 'carousel' ? '\uD83C\uDFA0 קרוסלה' : (ad.creativeType === 'single' ? '\uD83D\uDDBC תמונה' : '-');
+    var typeLabel = ad.creativeType === 'carousel'
+      ? '🎠 קרוסלה'
+      : (ad.creativeType === 'single' ? '🖼 תמונה' : '-');
+
     html += '<tr onclick="openModal(' + i + ')" style="cursor:pointer">'
-      + '<td><div class="thumb-cell">' + thumbHtml + carouselMini + '</div></td>'
-      + '<td>' + escHtml(ad.name) + '</td>'
+      + '<td><div class="thumb-cell">' + thumbHtml + miniCarousel + '</div></td>'
+      + '<td title="' + escAttr(ad.name) + '">' + esc(truncate(ad.name, 40)) + '</td>'
       + '<td>' + typeLabel + '</td>'
-      + '<td>' + escHtml(ad.adset) + '</td>'
-      + '<td>' + formatCurrency(ad.spend) + '</td>'
+      + '<td>' + esc(truncate(ad.adset, 30)) + '</td>'
+      + '<td>' + formatNIS(ad.spend) + '</td>'
+      + '<td>' + formatNIS(ad.revenue) + '</td>'
       + '<td>' + ad.roas.toFixed(2) + '</td>'
       + '<td>' + ad.ctr.toFixed(2) + '%</td>'
-      + '<td>' + formatCurrency(ad.cpc) + '</td>'
+      + '<td>' + formatNIS(ad.cpc) + '</td>'
       + '<td>' + ad.frequency.toFixed(2) + '</td>'
       + '<td>' + ad.purchases + '</td>'
-      + '<td><span class="badge-status ' + statusBadge.cls + '" style="position:static">' + statusBadge.text + '</span></td>'
+      + '<td><span class="badge-status ' + sb.cls + '" style="position:static">' + sb.label + '</span></td>'
       + '</tr>';
   });
+
   html += '</tbody></table>';
   document.getElementById('tableWrap').innerHTML = html;
 }
 
-/* ---- View Toggle ---- */
+/* ============================================
+   11. VIEW TOGGLE
+   ============================================ */
 
 function setView(view) {
   currentView = view;
@@ -549,69 +656,67 @@ function setView(view) {
   document.getElementById('tableWrap').classList.toggle('hidden', view !== 'table');
 }
 
-/* ---- Modal with Ad Preview ---- */
+/* ============================================
+   12. MODAL WITH AD PREVIEW
+   ============================================ */
 
 function openModal(index) {
   var ad = adsData[index];
   if (!ad) return;
+
   var imgHtml = ad.thumbnail
-    ? '<img class="modal-img" src="' + escAttr(ad.thumbnail) + '" alt="creative" onerror="this.style.display=\'none\'">'
+    ? '<img class="modal-img" src="' + escAttr(ad.thumbnail) + '" alt="" onerror="this.style.display=\'none\'">'
     : '';
+
   var typeTag = '';
   if (ad.creativeType === 'carousel') {
-    typeTag = ' <span style="font-size:12px;color:#a78bfa">(\uD83C\uDFA0 קרוסלה - ' + ad.carouselCount + ' כרטיסים)</span>';
+    typeTag = ' <span style="font-size:12px;color:var(--purple)">(🎠 קרוסלה — ' + ad.carouselCount + ' כרטיסים)</span>';
   }
+
   var html = imgHtml
-    + '<div class="modal-title">' + escHtml(ad.name) + typeTag + '</div>'
-    + '<div class="modal-sub">' + escHtml(ad.campaign) + ' &bull; ' + escHtml(ad.adset) + '</div>'
+    + '<div class="modal-title">' + esc(ad.name) + typeTag + '</div>'
+    + '<div class="modal-sub">' + esc(ad.campaign) + ' &bull; ' + esc(ad.adset) + '</div>'
     + '<div class="modal-stats">'
-    + modalStat('הוצאה', formatCurrency(ad.spend))
-    + modalStat('הכנסה', formatCurrency(ad.revenue))
-    + modalStat('ROAS', ad.roas.toFixed(2) + 'x')
-    + modalStat('רכישות', ad.purchases.toString())
-    + modalStat('חשיפות', ad.impressions.toLocaleString())
-    + modalStat('קליקים', ad.clicks.toLocaleString())
-    + modalStat('CTR', ad.ctr.toFixed(2) + '%')
-    + modalStat('CPC', formatCurrency(ad.cpc))
-    + modalStat('Reach', ad.reach.toLocaleString())
-    + modalStat('Frequency', ad.frequency.toFixed(2))
+    + msStat('הוצאה', formatNIS(ad.spend))
+    + msStat('הכנסה', formatNIS(ad.revenue))
+    + msStat('ROAS', ad.roas.toFixed(2) + 'x')
+    + msStat('רכישות', String(ad.purchases))
+    + msStat('חשיפות', ad.impressions.toLocaleString())
+    + msStat('קליקים', ad.clicks.toLocaleString())
+    + msStat('CTR', ad.ctr.toFixed(2) + '%')
+    + msStat('CPC', formatNIS(ad.cpc))
+    + msStat('Reach', ad.reach.toLocaleString())
+    + msStat('Frequency', ad.frequency.toFixed(2))
     + '</div>'
     + '<div class="preview-label">תצוגה מקדימה של המודעה:</div>'
     + '<div class="ad-preview-wrap" id="adPreviewWrap">'
-    + '<div class="preview-loading"><span class="spinner"></span> טוען תצוגה מקדימה...</div>'
+    + '<div class="pv-msg"><span class="spinner"></span>&nbsp; טוען תצוגה מקדימה...</div>'
     + '</div>';
+
   document.getElementById('modalBody').innerHTML = html;
   document.getElementById('modalOverlay').classList.add('show');
-
-  // Fetch ad preview
   loadAdPreview(ad.id);
 }
 
 function loadAdPreview(adId) {
-  var previewUrl = 'https://graph.facebook.com/v19.0/' + adId
+  var url = META_API + '/' + adId
     + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
 
-  fetch(previewUrl)
+  fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(json) {
       var wrap = document.getElementById('adPreviewWrap');
       if (!wrap) return;
-      if (json.error) {
-        wrap.innerHTML = '<div class="preview-loading" style="color:var(--dim);font-size:12px">לא ניתן לטעון תצוגה מקדימה</div>';
+      if (json.error || !json.data || !json.data[0] || !json.data[0].body) {
+        wrap.innerHTML = '<div class="pv-msg" style="font-size:12px">לא ניתן לטעון תצוגה מקדימה</div>';
         return;
       }
-      if (json.data && json.data[0] && json.data[0].body) {
-        var previewHtml = json.data[0].body;
-        wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(previewHtml) + '"></iframe>';
-      } else {
-        wrap.innerHTML = '<div class="preview-loading" style="color:var(--dim);font-size:12px">אין תצוגה מקדימה זמינה</div>';
-      }
+      var body = json.data[0].body;
+      wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(body) + '"></iframe>';
     })
     .catch(function() {
       var wrap = document.getElementById('adPreviewWrap');
-      if (wrap) {
-        wrap.innerHTML = '<div class="preview-loading" style="color:var(--dim);font-size:12px">שגיאה בטעינת תצוגה מקדימה</div>';
-      }
+      if (wrap) wrap.innerHTML = '<div class="pv-msg" style="font-size:12px">שגיאה בטעינת תצוגה מקדימה</div>';
     });
 }
 
@@ -621,29 +726,27 @@ function closeModal(e) {
   }
 }
 
-function modalStat(label, value) {
+function msStat(label, value) {
   return '<div class="ms"><div class="ms-label">' + label + '</div><div class="ms-value">' + value + '</div></div>';
 }
 
-/* ---- Claude AI Analysis ---- */
+/* ============================================
+   13. CLAUDE AI ANALYSIS
+   ============================================ */
 
 function runAnalysis() {
-  if (!CLAUDE_KEY) {
-    alert('יש להזין Claude API Key בעת ההתחברות');
-    return;
-  }
-  if (!WORKER_URL) {
-    alert('יש להזין Cloudflare Worker URL בעת ההתחברות');
+  if (!CLAUDE_KEY && !WORKER_URL) {
+    alert('יש להזין Claude API Key ו-Cloudflare Worker URL בעת ההתחברות');
     return;
   }
   if (adsData.length === 0) {
-    alert('אין נתונים לנתח. טען נתונים קודם.');
+    alert('אין נתונים לנתח. טעני נתונים קודם.');
     return;
   }
 
   var btn = document.getElementById('analysisBtn');
   btn.disabled = true;
-  btn.textContent = '\u23F3 מנתח...';
+  btn.textContent = '⏳ מנתח נתונים...';
 
   var summary = adsData.map(function(ad) {
     return {
@@ -663,20 +766,26 @@ function runAnalysis() {
     };
   });
 
-  var prompt = 'אתה מומחה פרסום דיגיטלי. נתח את נתוני הקריאייטיבים הבאים מ-Meta Ads וספק ניתוח מקיף בעברית עם הסעיפים הבאים:\n\n'
-    + '\uD83C\uDFC6 הקריאייטיבים המנצחים\n'
-    + '\uD83D\uDC80 הקריאייטיבים שצריך לעצור\n'
-    + '\uD83D\uDCCA תובנות על הקהלים (לפי אדסטים)\n'
-    + '\uD83C\uDFAF 5 פעולות מיידיות\n'
-    + '\uD83D\uDCA1 רעיונות לקריאייטיבים חדשים\n'
-    + '\u26A0\uFE0F אזהרות וסיכונים\n\n'
+  var prompt = 'אתה מומחה פרסום דיגיטלי. נתח את הקריאייטיבים הבאים מ-Meta Ads וספק ניתוח מקיף בעברית:\n\n'
+    + '🏆 הקריאייטיבים המנצחים\n'
+    + '💀 קריאייטיבים שצריך לעצור\n'
+    + '📊 תובנות על קהלים (לפי אדסטים)\n'
+    + '🎯 5 פעולות מיידיות\n'
+    + '💡 רעיונות לקריאייטיבים חדשים\n'
+    + '⚠️ אזהרות וסיכונים\n\n'
     + 'הנתונים:\n' + JSON.stringify(summary, null, 2);
 
-  fetch(WORKER_URL, {
+  var endpoint = WORKER_URL || '';
+  if (!endpoint) {
+    btn.disabled = false;
+    btn.textContent = '🤖 ניתוח Claude AI';
+    alert('חסר Worker URL');
+    return;
+  }
+
+  fetch(endpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       apiKey: CLAUDE_KEY,
       model: 'claude-sonnet-4-20250514',
@@ -687,47 +796,80 @@ function runAnalysis() {
   .then(function(r) { return r.json(); })
   .then(function(json) {
     btn.disabled = false;
-    btn.textContent = '\uD83E\uDD16 ניתוח Claude AI';
+    btn.textContent = '🤖 ניתוח Claude AI';
     if (json.error) {
       alert('שגיאת Claude: ' + (json.error.message || JSON.stringify(json.error)));
       return;
     }
-    var text = (json.content && json.content[0] && json.content[0].text) || 'לא התקבלה תשובה';
+    var text = '';
+    if (json.content && json.content[0] && json.content[0].text) {
+      text = json.content[0].text;
+    } else {
+      text = 'לא התקבלה תשובה מ-Claude';
+    }
     document.getElementById('analysisContent').textContent = text;
     document.getElementById('analysisSection').classList.remove('hidden');
     document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
   })
   .catch(function(err) {
     btn.disabled = false;
-    btn.textContent = '\uD83E\uDD16 ניתוח Claude AI';
+    btn.textContent = '🤖 ניתוח Claude AI';
     alert('שגיאת רשת: ' + err.message);
   });
 }
 
-/* ---- Helpers ---- */
+/* ============================================
+   14. HELPER FUNCTIONS
+   ============================================ */
 
-function getStatusBadge(status) {
+function statusBadge(status) {
   switch (status) {
-    case 'win':  return { cls: 'badge-win',  text: '\uD83D\uDFE2 WIN' };
-    case 'ok':   return { cls: 'badge-ok',   text: '\uD83D\uDFE1 OK' };
-    case 'stop': return { cls: 'badge-stop', text: '\uD83D\uDD34 STOP' };
-    default:     return { cls: 'badge-new',  text: '\u26AA חדש' };
+    case 'win':  return { cls: 'badge-win',  label: 'WIN 🟢' };
+    case 'ok':   return { cls: 'badge-ok',   label: 'OK 🟡' };
+    case 'stop': return { cls: 'badge-stop', label: 'STOP 🔴' };
+    default:     return { cls: 'badge-new',  label: 'חדש ⚪' };
   }
 }
 
-function formatCurrency(n) {
-  return '\u20AA' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function formatNIS(n) {
+  return '₪' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-function escHtml(s) {
+function esc(s) {
+  if (!s) return '';
   var d = document.createElement('div');
   d.appendChild(document.createTextNode(s));
   return d.innerHTML;
 }
 
 function escAttr(s) {
-  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (!s) return '';
+  return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
+function truncate(s, max) {
+  if (!s) return '';
+  return s.length > max ? s.substring(0, max) + '...' : s;
+}
+
+/* ============================================
+   15. KEYBOARD SHORTCUTS
+   ============================================ */
+
+document.addEventListener('keydown', function(e) {
+  /* ESC closes modal */
+  if (e.key === 'Escape') {
+    document.getElementById('modalOverlay').classList.remove('show');
+  }
+});
+
+/* ============================================
+   INIT — run on page load
+   ============================================ */
+
+syncPeriods();
+restoreSession();
+
 </script>
 </body>
 </html>
