@@ -740,27 +740,13 @@ function tryPreviewFormats(ad, formats, index) {
     .then(function(r) { return r.json(); })
     .then(function(json) {
       if (json.data && json.data[0] && json.data[0].body) {
-        var body = json.data[0].body;
-
-        /* Render preview in hidden iframe and extract image */
-        return extractPrimaryImageFromRenderedPreview(body)
-          .then(function(extracted) {
-            console.log('SELECTED PREVIEW IMAGE', ad.name, fmt, extracted);
-            if (extracted) {
-              ad.previewHtml = body;
-              ad.previewImage = extracted;
-              ad.previewFormat = fmt;
-              return; /* success — stop trying other formats */
-            }
-            /* this format didn't yield a usable image — try next */
-            return tryPreviewFormats(ad, formats, index + 1);
-          });
+        ad.previewHtml = json.data[0].body;
+        ad.previewFormat = fmt;
+        return;
       }
-      /* no preview data — try next format */
       return tryPreviewFormats(ad, formats, index + 1);
     })
     .catch(function() {
-      /* network error on this format — try next */
       return tryPreviewFormats(ad, formats, index + 1);
     });
 }
@@ -770,18 +756,8 @@ function tryPreviewFormats(ad, formats, index) {
    ============================================ */
 
 function resolveCardImages() {
-  /*
-   * Priority for card thumbnail:
-   *   1. previewImage (extracted from rendered Meta ad preview)
-   *   2. stableImageUrl (permalink_url from adimages endpoint — never expires)
-   *   3. thumbnail_url / image_url (temporary CDN — already in ad.thumbnail)
-   *   4. placeholder
-   */
   adsData.forEach(function(ad) {
-    if (ad.previewImage) {
-      ad.thumbnail = ad.previewImage;
-      ad.imageSource = 'preview';
-    } else if (ad.stableImageUrl) {
+    if (ad.stableImageUrl) {
       ad.thumbnail = ad.stableImageUrl;
       ad.imageSource = 'stable';
     } else {
@@ -917,9 +893,9 @@ function renderCards() {
       carouselBadge = '<div class="badge-carousel">🎠 x' + ad.carouselCount + '</div>';
     }
     var sourceBadge = '';
-    if (ad.imageSource === 'preview') {
-      sourceBadge = '<div class="badge-source badge-source-preview">PREVIEW</div>';
-    } else if (ad.thumbnail) {
+    if (ad.imageSource === 'stable') {
+      sourceBadge = '<div class="badge-source badge-source-preview">STABLE</div>';
+    } else if (ad.imageSource === 'asset') {
       sourceBadge = '<div class="badge-source badge-source-asset">ASSET</div>';
     }
     html += '<div class="ad-card" onclick="openModal(' + i + ')">'
@@ -966,9 +942,9 @@ function renderTable() {
       miniCarousel = '<span class="carousel-mini">🎠' + ad.carouselCount + '</span>';
     }
     var miniSource = '';
-    if (ad.imageSource === 'preview') {
-      miniSource = '<span class="source-mini source-mini-preview">PV</span>';
-    } else if (ad.thumbnail) {
+    if (ad.imageSource === 'stable') {
+      miniSource = '<span class="source-mini source-mini-preview">ST</span>';
+    } else if (ad.imageSource === 'asset') {
       miniSource = '<span class="source-mini source-mini-asset">AS</span>';
     }
     var typeLabel = ad.creativeType === 'carousel'
