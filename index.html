@@ -309,28 +309,43 @@ function fetchData() {
       }
       adsData = data.map(parseAd);
 
-      // Fetch creative images - one simple call per ad
+      // Step 1: Batch fetch creative IDs for all ads
       var adIds = adsData.map(function(ad) { return ad.id; }).filter(Boolean);
       if (adIds.length === 0) {
         renderMetrics(); renderCards(); renderTable();
         return;
       }
 
-      var imagePromises = adsData.map(function(ad) {
-        // Direct call: ad -> creative with effective_image_url
-        return fetch('https://graph.facebook.com/v19.0/' + ad.id
-          + '?fields=creative{effective_image_url,thumbnail_url}'
-          + '&access_token=' + TOKEN)
-          .then(function(r) { return r.json(); })
-          .then(function(j) {
-            if (j.creative) {
-              ad.thumbnail = j.creative.effective_image_url || j.creative.thumbnail_url || '';
-            }
-          })
-          .catch(function() { ad.thumbnail = ''; });
-      });
+      var filterParam = encodeURIComponent('[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]');
+      var adsUrl = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/ads'
+        + '?fields=id,creative{id}&filtering=' + filterParam
+        + '&limit=200&access_token=' + TOKEN;
 
-      return Promise.all(imagePromises);
+      return fetch(adsUrl)
+        .then(function(r) { return r.json(); })
+        .then(function(adsJson) {
+          if (adsJson.data) {
+            adsJson.data.forEach(function(adObj) {
+              if (adObj.creative && adObj.creative.id) {
+                adsData.forEach(function(ad) {
+                  if (ad.id === adObj.id) ad.creativeId = adObj.creative.id;
+                });
+              }
+            });
+          }
+          // Step 2: Fetch thumbnail_url (600x600) for each creative
+          var imgPromises = adsData.map(function(ad) {
+            if (!ad.creativeId) return Promise.resolve();
+            return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
+              + '?fields=thumbnail_url&thumbnail_width=600&thumbnail_height=600'
+              + '&access_token=' + TOKEN)
+              .then(function(r) { return r.json(); })
+              .then(function(j) { ad.thumbnail = j.thumbnail_url || ''; })
+              .catch(function() { ad.thumbnail = ''; });
+          });
+          return Promise.all(imgPromises);
+        })
+        .catch(function() { /* skip images on error */ });
     })
     .then(function() {
       if (adsData.length > 0) {
