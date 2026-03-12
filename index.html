@@ -63,6 +63,9 @@ a{color:var(--accent);text-decoration:none}
 .ad-card .badge-status{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;backdrop-filter:blur(8px)}
 .ad-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}
 .ad-card .badge-carousel{position:absolute;top:42px;left:10px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.75);color:#fff;backdrop-filter:blur(8px)}
+.ad-card .badge-source{position:absolute;bottom:186px;left:10px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.5px;backdrop-filter:blur(8px)}
+.badge-source-preview{background:rgba(0,255,157,.25);color:var(--green)}
+.badge-source-asset{background:rgba(255,255,255,.12);color:var(--dim)}
 .badge-win{background:rgba(0,255,157,.2);color:var(--green)}
 .badge-ok{background:rgba(255,215,0,.2);color:var(--yellow)}
 .badge-stop{background:rgba(255,77,106,.2);color:var(--red)}
@@ -83,6 +86,9 @@ a{color:var(--accent);text-decoration:none}
 .table-wrap .thumb-cell{width:50px;height:50px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--surface);font-size:20px;position:relative}
 .table-wrap .thumb-cell img{width:100%;height:100%;object-fit:cover}
 .table-wrap .carousel-mini{position:absolute;bottom:2px;left:2px;font-size:8px;background:rgba(120,80,255,.85);color:#fff;padding:1px 4px;border-radius:4px;font-weight:700}
+.table-wrap .source-mini{position:absolute;top:2px;left:2px;font-size:7px;padding:1px 3px;border-radius:3px;font-weight:700}
+.source-mini-preview{background:rgba(0,255,157,.3);color:var(--green)}
+.source-mini-asset{background:rgba(255,255,255,.15);color:var(--dim)}
 
 /* ===== Modal ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
@@ -350,6 +356,78 @@ function getCreativeImage(creative) {
 }
 
 /* ============================================
+   3b. EXTRACT PRIMARY IMAGE FROM AD PREVIEW HTML
+   ============================================ */
+
+function extractPrimaryImageFromPreview(previewHtml) {
+  /*
+   * Parse the Meta ad preview HTML, find all <img> tags,
+   * filter out icons/profile pics/emojis/small images,
+   * return the URL of the most likely main ad image.
+   */
+  if (!previewHtml) return null;
+  try {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(previewHtml, 'text/html');
+    var imgs = doc.querySelectorAll('img');
+    if (imgs.length === 0) return null;
+
+    var candidates = [];
+    for (var i = 0; i < imgs.length; i++) {
+      var img = imgs[i];
+      var src = img.getAttribute('src') || '';
+      if (!src || src.indexOf('data:') === 0) continue;
+
+      /* Filter out known irrelevant patterns */
+      var srcLower = src.toLowerCase();
+      var isIcon = false;
+
+      /* Profile pictures — typically small circular avatars */
+      if (srcLower.indexOf('profile') !== -1 && srcLower.indexOf('pic') !== -1) isIcon = true;
+      /* Facebook platform icons */
+      if (srcLower.indexOf('/rsrc.php') !== -1) isIcon = true;
+      if (srcLower.indexOf('emoji') !== -1) isIcon = true;
+      if (srcLower.indexOf('icon') !== -1) isIcon = true;
+      if (srcLower.indexOf('/images/reactions/') !== -1) isIcon = true;
+      if (srcLower.indexOf('static.xx.fbcdn') !== -1) isIcon = true;
+
+      /* Check explicit width/height attributes — skip tiny images */
+      var w = parseInt(img.getAttribute('width')) || 0;
+      var h = parseInt(img.getAttribute('height')) || 0;
+      if ((w > 0 && w < 60) || (h > 0 && h < 60)) isIcon = true;
+
+      /* Check inline style for small dimensions */
+      var style = img.getAttribute('style') || '';
+      var styleW = style.match(/width\s*:\s*(\d+)/);
+      var styleH = style.match(/height\s*:\s*(\d+)/);
+      if (styleW && parseInt(styleW[1]) < 60) isIcon = true;
+      if (styleH && parseInt(styleH[1]) < 60) isIcon = true;
+
+      if (isIcon) continue;
+
+      /* Score: prefer larger explicit dimensions, or scontent CDN images */
+      var score = 0;
+      if (w > 0) score += w;
+      if (h > 0) score += h;
+      if (srcLower.indexOf('scontent') !== -1) score += 500;
+      if (srcLower.indexOf('fbcdn') !== -1 && srcLower.indexOf('static.xx') === -1) score += 300;
+      /* If no dimensions, still a valid candidate with base score */
+      if (score === 0) score = 100;
+
+      candidates.push({ src: src, score: score });
+    }
+
+    if (candidates.length === 0) return null;
+
+    /* Sort by score descending and return best match */
+    candidates.sort(function(a, b) { return b.score - a.score; });
+    return candidates[0].src;
+  } catch (e) {
+    return null;
+  }
+}
+
+/* ============================================
    4. FETCH DATA — Main data pipeline
    ============================================ */
 
@@ -378,8 +456,19 @@ function fetchData() {
       return fetchCreativeImages();
     })
     .then(function() {
+      /* Step 3: fetch ad preview HTML and extract main images */
       if (adsData.length > 0) {
+        /* Render with asset images first so user sees something immediately */
         applySort();
+        /* Then upgrade card images with preview images in background */
+        return fetchPreviewImages();
+      }
+    })
+    .then(function() {
+      if (adsData.length > 0) {
+        resolveCardImages();
+        renderCards();
+        renderTable();
       }
     })
     .catch(function(err) {
@@ -459,6 +548,55 @@ function fetchCreativeImages() {
 }
 
 /* ============================================
+   5b. FETCH PREVIEW IMAGES (batch)
+   ============================================ */
+
+function fetchPreviewImages() {
+  /* Fetch ad preview HTML for each ad, then extract the main image */
+  var promises = adsData.map(function(ad) {
+    if (!ad.id) return Promise.resolve();
+    var url = META_API + '/' + ad.id
+      + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
+    return fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(json) {
+        if (json.data && json.data[0] && json.data[0].body) {
+          ad.previewHtml = json.data[0].body;
+          var extracted = extractPrimaryImageFromPreview(ad.previewHtml);
+          if (extracted) {
+            ad.previewImage = extracted;
+          }
+        }
+      })
+      .catch(function() { /* skip preview errors */ });
+  });
+  return Promise.all(promises);
+}
+
+/* ============================================
+   5c. RESOLVE CARD IMAGES — pick best source
+   ============================================ */
+
+function resolveCardImages() {
+  /*
+   * Priority for card thumbnail:
+   *   1. previewImage (extracted from Meta ad preview HTML)
+   *   2. carousel first attachment (already in thumbnail if carousel)
+   *   3. creative.image_url (already in thumbnail)
+   *   4. creative.thumbnail_url (already in thumbnail)
+   *   5. placeholder
+   */
+  adsData.forEach(function(ad) {
+    if (ad.previewImage) {
+      ad.thumbnail = ad.previewImage;
+      ad.imageSource = 'preview';
+    } else {
+      ad.imageSource = ad.thumbnail ? 'asset' : 'none';
+    }
+  });
+}
+
+/* ============================================
    6. PARSE AD DATA
    ============================================ */
 
@@ -510,7 +648,10 @@ function parseAd(raw) {
     thumbnail: '',
     creativeType: 'unknown',
     carouselCount: 0,
-    objectType: ''
+    objectType: '',
+    previewImage: '',
+    previewHtml: '',
+    imageSource: 'asset'
   };
 }
 
@@ -578,11 +719,18 @@ function renderCards() {
     if (ad.creativeType === 'carousel' && ad.carouselCount > 0) {
       carouselBadge = '<div class="badge-carousel">🎠 x' + ad.carouselCount + '</div>';
     }
+    var sourceBadge = '';
+    if (ad.imageSource === 'preview') {
+      sourceBadge = '<div class="badge-source badge-source-preview">PREVIEW</div>';
+    } else if (ad.thumbnail) {
+      sourceBadge = '<div class="badge-source badge-source-asset">ASSET</div>';
+    }
     html += '<div class="ad-card" onclick="openModal(' + i + ')">'
       + '<div class="thumb">' + thumbHtml + '</div>'
       + '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>'
       + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
       + carouselBadge
+      + sourceBadge
       + '<div class="info">'
       + '<div class="name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
       + '<div class="adset" title="' + escAttr(ad.adset) + '">' + esc(ad.adset) + '</div>'
@@ -620,12 +768,18 @@ function renderTable() {
     if (ad.creativeType === 'carousel' && ad.carouselCount > 0) {
       miniCarousel = '<span class="carousel-mini">🎠' + ad.carouselCount + '</span>';
     }
+    var miniSource = '';
+    if (ad.imageSource === 'preview') {
+      miniSource = '<span class="source-mini source-mini-preview">PV</span>';
+    } else if (ad.thumbnail) {
+      miniSource = '<span class="source-mini source-mini-asset">AS</span>';
+    }
     var typeLabel = ad.creativeType === 'carousel'
       ? '🎠 קרוסלה'
       : (ad.creativeType === 'single' ? '🖼 תמונה' : '-');
 
     html += '<tr onclick="openModal(' + i + ')" style="cursor:pointer">'
-      + '<td><div class="thumb-cell">' + thumbHtml + miniCarousel + '</div></td>'
+      + '<td><div class="thumb-cell">' + thumbHtml + miniCarousel + miniSource + '</div></td>'
       + '<td title="' + escAttr(ad.name) + '">' + esc(truncate(ad.name, 40)) + '</td>'
       + '<td>' + typeLabel + '</td>'
       + '<td>' + esc(truncate(ad.adset, 30)) + '</td>'
