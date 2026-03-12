@@ -309,105 +309,28 @@ function fetchData() {
       }
       adsData = data.map(parseAd);
 
-      // Collect unique ad IDs to fetch creative IDs
+      // Fetch creative images - one simple call per ad
       var adIds = adsData.map(function(ad) { return ad.id; }).filter(Boolean);
       if (adIds.length === 0) {
         renderMetrics(); renderCards(); renderTable();
         return;
       }
 
-      // Step 1: Fetch creative IDs via /ads endpoint
-      var adsUrl = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/ads'
-        + '?fields=id,creative{id}'
-        + '&filtering=[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]'
-        + '&limit=200&access_token=' + TOKEN;
-
-      return fetch(adsUrl)
-        .then(function(r) { return r.json(); })
-        .then(function(adsJson) {
-          // Map ad ID to creative ID
-          if (adsJson.data) {
-            adsJson.data.forEach(function(adObj) {
-              if (adObj.creative && adObj.creative.id) {
-                adsData.forEach(function(ad) {
-                  if (ad.id === adObj.id) {
-                    ad.creativeId = adObj.creative.id;
-                  }
-                });
-              }
-            });
-          }
-
-          // Step 2: Get images from each creative (safe fields only)
-          var storyPromises = adsData.map(function(ad) {
-            if (!ad.creativeId) return Promise.resolve();
-            return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
-              + '?fields=effective_image_url,image_url,thumbnail_url'
-              + '&access_token=' + TOKEN)
-              .then(function(r) { return r.json(); })
-              .then(function(j) {
-                if (j.error) { ad.thumbnail = ''; return; }
-                ad.thumbnail = j.image_url || j.effective_image_url || j.thumbnail_url || '';
-              })
-              .catch(function() { ad.thumbnail = ''; });
-          });
-          return Promise.all(storyPromises);
-        })
-        .then(function() {
-          // Step 3: Try to upgrade to higher quality via image_hash + adimages (non-breaking)
-          var hashPromises = adsData.map(function(ad) {
-            if (!ad.creativeId) return Promise.resolve();
-            return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId
-              + '?fields=image_hash'
-              + '&access_token=' + TOKEN)
-              .then(function(r) { return r.json(); })
-              .then(function(j) {
-                if (j.image_hash) ad.imageHash = j.image_hash;
-              })
-              .catch(function() {});
-          });
-          return Promise.all(hashPromises);
-        })
-        .then(function() {
-          // Step 4: Batch fetch original-resolution images from adimages endpoint
-          var uniqueHashes = [];
-          adsData.forEach(function(ad) {
-            if (ad.imageHash && uniqueHashes.indexOf(ad.imageHash) === -1) {
-              uniqueHashes.push(ad.imageHash);
+      var imagePromises = adsData.map(function(ad) {
+        // Direct call: ad -> creative with effective_image_url
+        return fetch('https://graph.facebook.com/v19.0/' + ad.id
+          + '?fields=creative{effective_image_url,thumbnail_url}'
+          + '&access_token=' + TOKEN)
+          .then(function(r) { return r.json(); })
+          .then(function(j) {
+            if (j.creative) {
+              ad.thumbnail = j.creative.effective_image_url || j.creative.thumbnail_url || '';
             }
-          });
-          if (uniqueHashes.length === 0) return;
+          })
+          .catch(function() { ad.thumbnail = ''; });
+      });
 
-          return fetch('https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/adimages'
-            + '?hashes=' + encodeURIComponent(JSON.stringify(uniqueHashes))
-            + '&fields=hash,url'
-            + '&access_token=' + TOKEN)
-            .then(function(r) { return r.json(); })
-            .then(function(j) {
-              var hashToUrl = {};
-              // Handle nested format: { data: { images: { hash: { url } } } }
-              if (j.data && j.data.images) {
-                var imgs = j.data.images;
-                Object.keys(imgs).forEach(function(h) {
-                  if (imgs[h] && imgs[h].url) hashToUrl[h] = imgs[h].url;
-                });
-              }
-              // Handle flat format: { data: [ { hash, url } ] }
-              if (j.data && Array.isArray(j.data)) {
-                j.data.forEach(function(img) {
-                  if (img.hash && img.url) hashToUrl[img.hash] = img.url;
-                });
-              }
-              // Only upgrade thumbnails that got a valid high-res URL
-              adsData.forEach(function(ad) {
-                if (ad.imageHash && hashToUrl[ad.imageHash]) {
-                  ad.thumbnail = hashToUrl[ad.imageHash];
-                }
-              });
-            })
-            .catch(function() { /* keep existing thumbnails */ });
-        })
-        .catch(function() { /* silently skip images on error */ });
+      return Promise.all(imagePromises);
     })
     .then(function() {
       if (adsData.length > 0) {
