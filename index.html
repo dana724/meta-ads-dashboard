@@ -3,125 +3,595 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meta Ads Intelligence</title>
+<title>Meta Ads Dashboard</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;background:#0a0a0f;color:#fff;font-family:'Segoe UI',sans-serif;direction:rtl}.header{border-bottom:1px solid rgba(255,255,255,0.06);padding:18px 28px;display:flex;align-items:center;gap:14px;background:rgba(0,255,157,0.02);position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#00ff9d,#0066ff);display:flex;align-items:center;justify-content:center;font-size:20px}.header-title{font-size:18px;font-weight:700}.header-sub{font-size:12px;color:#555;margin-top:2px}.nav-buttons{margin-right:auto;display:flex;gap:8px}.nav-btn{background:transparent;border:1px solid rgba(255,255,255,0.1);color:#666;border-radius:8px;padding:6px 16px;cursor:pointer;font-size:13px}.nav-btn.active{background:rgba(0,255,157,0.1);border-color:#00ff9d;color:#00ff9d}.nav-btn.green{background:rgba(0,255,157,0.05);border-color:rgba(0,255,157,0.3);color:#00ff9d}.content{padding:24px 28px 100px}.connect-panel{max-width:520px;margin:40px auto;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:32px}.connect-title{font-size:22px;font-weight:700;margin-bottom:8px}.connect-sub{font-size:13px;color:#666;margin-bottom:28px;line-height:1.6}.field{margin-bottom:16px}.field label{font-size:11px;color:#888;letter-spacing:1px;display:block;margin-bottom:6px;text-transform:uppercase}.field input,.field select{width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:14px;outline:none}.field select{background:#111}.btn-main{width:100%;padding:13px;background:linear-gradient(135deg,#00ff9d,#00cc7a);border:none;border-radius:10px;color:#000;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}.btn-main:disabled{opacity:.4;cursor:not-allowed}.security-note{margin-top:20px;padding:14px;background:rgba(0,100,255,0.05);border:1px solid rgba(0,100,255,0.15);border-radius:8px;font-size:12px;color:#6688ff;line-height:1.5}.error-box{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);border-radius:8px;padding:12px;font-size:13px;color:#ff6666;margin-bottom:12px;display:none}.metrics-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}.metric-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;flex:1;min-width:120px}.metric-label{font-size:11px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}.metric-value{font-size:22px;font-weight:700;font-family:monospace}.metric-sub{font-size:11px;color:#555;margin-top:4px}.view-toggle{display:flex;gap:8px;margin-bottom:16px}.toggle-btn{padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#666}.toggle-btn.active{background:rgba(255,255,255,0.06);color:#fff;border-color:rgba(255,255,255,0.2)}.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}.creative-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s}.creative-card:hover{border-color:rgba(255,255,255,0.18);transform:translateY(-2px)}.card-thumb{width:100%;aspect-ratio:1;background:rgba(255,255,255,0.04);position:relative;overflow:hidden}.card-status-badge{position:absolute;top:8px;right:8px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}.card-roas-badge{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.8);padding:3px 8px;border-radius:6px;font-size:12px;font-weight:700;font-family:monospace}.card-body{padding:12px}.card-name{font-size:12px;font-weight:600;color:#ddd;margin-bottom:8px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.card-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px}.card-stat{background:rgba(255,255,255,0.03);border-radius:6px;padding:5px 7px}.card-stat-label{font-size:9px;color:#555;text-transform:uppercase}.card-stat-value{font-size:13px;font-weight:700;margin-top:1px}.table-wrap{overflow-x:auto}.table-head{display:grid;grid-template-columns:56px 2fr 1fr 80px 75px 70px 70px 65px 70px;padding:8px 16px;background:rgba(255,255,255,0.03);border-radius:8px 8px 0 0;font-size:11px;color:#555;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.06);min-width:900px}.table-row{display:grid;grid-template-columns:56px 2fr 1fr 80px 75px 70px 70px 65px 70px;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;min-width:900px;cursor:pointer}.table-row:hover{background:rgba(255,255,255,0.03)}.thumb-cell{width:44px;height:44px;border-radius:8px;overflow:hidden}.thumb-cell img{width:100%;height:100%;object-fit:cover}.thumb-placeholder{width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:18px}.ad-name{font-size:13px;font-weight:500;color:#ddd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}.campaign-name{font-size:11px;color:#444}.adset-name{font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cell-center{text-align:center}.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center}.modal-overlay.open{display:flex}.modal{background:#13131a;border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:90%;max-width:580px;max-height:90vh;overflow-y:auto;padding:28px}.modal-close{float:left;background:transparent;border:none;color:#666;font-size:20px;cursor:pointer}.modal-thumb{width:100%;border-radius:12px;margin-bottom:20px;max-height:280px;object-fit:contain}.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.modal-stat{background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center}.modal-stat-label{font-size:10px;color:#666;text-transform:uppercase;margin-bottom:4px}.modal-stat-value{font-size:18px;font-weight:700;font-family:monospace}.analysis-panel{max-width:760px;margin:0 auto;background:rgba(0,255,157,0.02);border:1px solid rgba(0,255,157,0.1);border-radius:16px;padding:28px 32px}.analysis-h2{font-size:16px;font-weight:700;color:#00ff9d;margin-top:24px;margin-bottom:8px;border-bottom:1px solid rgba(0,255,157,0.2);padding-bottom:6px}.analysis-p{color:#ccc;font-size:14px;margin-bottom:4px;line-height:1.7}.analyze-btn{background:linear-gradient(135deg,#00ff9d,#00cc7a);border:none;border-radius:10px;padding:14px 32px;color:#000;font-size:16px;font-weight:700;cursor:pointer;margin-top:20px;display:block;margin-left:auto;margin-right:auto}.bottom-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(20,20,25,.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:8px 16px;display:flex;gap:12px;align-items:center;backdrop-filter:blur(10px)}.bottom-bar select{background:transparent;border:none;color:#888;font-size:12px;outline:none;cursor:pointer}.bottom-btn{background:rgba(0,255,157,0.1);border:1px solid rgba(0,255,157,0.2);border-radius:6px;padding:4px 12px;color:#00ff9d;cursor:pointer;font-size:12px}.bottom-disconnect{background:transparent;border:none;color:#444;cursor:pointer;font-size:12px}#data-view,#analysis-view{display:none}#connect-view{display:block}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--card:#12121a;--border:#1e1e2e;--accent:#00ff9d;--text:#e0e0e0;--dim:#888;--red:#ff4d6a;--yellow:#ffd700;--green:#00ff9d}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+
+/* Login */
+.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:90%;max-width:420px;text-align:center}
+.login-box h1{color:var(--accent);margin-bottom:8px;font-size:24px}
+.login-box p{color:var(--dim);margin-bottom:24px;font-size:14px}
+.login-box input{width:100%;padding:12px 16px;margin-bottom:12px;background:#1a1a2e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;direction:ltr;text-align:left}
+.login-box input::placeholder{color:#555}
+.login-box button{width:100%;padding:12px;background:var(--accent);color:#000;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;transition:.2s}
+.login-box button:hover{opacity:.85}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
+.topbar h1{font-size:20px;color:var(--accent)}
+.topbar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.topbar-actions select,.topbar-actions button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;cursor:pointer}
+.topbar-actions button.primary{background:var(--accent);color:#000;border:none;font-weight:700}
+.topbar-actions button:hover{opacity:.85}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:20px 24px}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.metric-card .label{font-size:12px;color:var(--dim);margin-bottom:4px}
+.metric-card .value{font-size:22px;font-weight:700;color:var(--accent)}
+
+/* View toggle */
+.view-toggle{display:flex;gap:8px;padding:0 24px 12px;justify-content:flex-start}
+.view-toggle button{padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--dim);cursor:pointer;font-size:13px}
+.view-toggle button.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:0 24px 24px}
+
+/* Card */
+.ad-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}
+.ad-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.ad-card .thumb{width:100%;height:180px;object-fit:cover;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--dim)}
+.ad-card .thumb img{width:100%;height:100%;object-fit:cover}
+.ad-card .badge-status{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;backdrop-filter:blur(8px)}
+.badge-win{background:rgba(0,255,157,.2);color:var(--green)}
+.badge-ok{background:rgba(255,215,0,.2);color:var(--yellow)}
+.badge-stop{background:rgba(255,77,106,.2);color:var(--red)}
+.badge-new{background:rgba(255,255,255,.15);color:#ccc}
+.ad-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.6);color:#fff;backdrop-filter:blur(8px)}
+.ad-card .info{padding:14px}
+.ad-card .info .name{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ad-card .info .adset{font-size:11px;color:var(--dim);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ad-card .info .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ad-card .info .stats .stat{font-size:12px}
+.ad-card .info .stats .stat span{color:var(--dim)}
+
+/* Table */
+.table-wrap{padding:0 24px 24px;overflow-x:auto}
+.table-wrap table{width:100%;border-collapse:collapse;font-size:13px}
+.table-wrap th{background:var(--card);padding:10px 12px;text-align:right;color:var(--dim);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+.table-wrap td{padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+.table-wrap tr:hover{background:rgba(0,255,157,.03)}
+.table-wrap .thumb-cell{width:50px;height:50px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#1a1a2e;font-size:20px}
+.table-wrap .thumb-cell img{width:100%;height:100%;object-fit:cover}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;position:relative}
+.modal .close-btn{position:absolute;top:12px;left:12px;background:none;border:none;color:var(--dim);font-size:24px;cursor:pointer}
+.modal .close-btn:hover{color:var(--text)}
+.modal .modal-img{width:100%;max-height:300px;object-fit:contain;border-radius:8px;margin-bottom:16px;background:#1a1a2e}
+.modal .modal-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.modal .modal-sub{font-size:13px;color:var(--dim);margin-bottom:16px}
+.modal .modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal .modal-stats .ms{background:#1a1a2e;padding:12px;border-radius:8px}
+.modal .modal-stats .ms .ms-label{font-size:11px;color:var(--dim)}
+.modal .modal-stats .ms .ms-value{font-size:18px;font-weight:700}
+
+/* Analysis */
+.analysis-section{padding:0 24px 24px}
+.analysis-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.analysis-box h3{color:var(--accent);margin-bottom:12px}
+.analysis-box .analysis-content{white-space:pre-wrap;line-height:1.7;font-size:14px}
+.analysis-btn{display:block;margin:0 24px 16px;padding:12px 24px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;width:calc(100% - 48px)}
+.analysis-btn:hover{opacity:.85}
+.analysis-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Loading */
+.loading{text-align:center;padding:60px;color:var(--dim);font-size:16px}
+.spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin-left:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Bottom bar */
+.bottombar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:50;flex-wrap:wrap}
+.bottombar select,.bottombar button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#1a1a2e;color:var(--text);font-size:13px;cursor:pointer}
+.bottombar button.danger{color:var(--red);border-color:rgba(255,77,106,.3)}
+.bottombar button.primary{background:var(--accent);color:#000;border:none;font-weight:700}
+.main-content{padding-bottom:60px}
+.hidden{display:none!important}
+
+/* Responsive */
+@media(max-width:600px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .grid{grid-template-columns:1fr}
+  .topbar{padding:12px 16px}
+  .topbar h1{font-size:16px}
+}
 </style>
 </head>
 <body>
-<div class="header"><div class="logo">📡</div><div><div class="header-title">Meta Ads Intelligence</div><div class="header-sub">ניתוח קריאייטיבים יומי מבוסס AI</div></div><div class="nav-buttons" id="nav-buttons" style="display:none"><button class="nav-btn active" id="btn-data" onclick="showView('data')">נתונים</button><button class="nav-btn green" onclick="runAnalysis()">🤖 ניתוח AI</button></div></div>
-<div class="content">
-<div id="connect-view"><div class="connect-panel"><div class="connect-title">חיבור לחשבון מטה</div><div class="connect-sub">developers.facebook.com/tools/explorer → ZOHARA ADS → ads_read → Generate Token</div><div class="error-box" id="error-box"></div><div class="field"><label>Access Token</label><input type="password" id="token-input" placeholder="EAAxxxxxxxx..."></div><div class="field"><label>Ad Account ID</label><input type="text" id="account-input" value="882300848610076"></div><div class="field"><label>תקופה</label><select id="date-select"><option value="yesterday">אתמול</option><option value="last_7d" selected>7 ימים אחרונים</option><option value="last_14d">14 ימים אחרונים</option><option value="last_30d">30 ימים אחרונים</option><option value="this_month">חודש זה</option><option value="last_month">חודש שעבר</option></select></div><button class="btn-main" id="fetch-btn" onclick="fetchData()">🚀 שלוף נתונים</button><div class="security-note">🔒 הטוקן שלך נשמר רק בדפדפן ולא נשלח לשום שרת.</div></div></div>
-<div id="data-view"><div class="metrics-row" id="metrics-row"></div><div class="view-toggle"><button class="toggle-btn active" id="toggle-cards" onclick="setMode('cards')">🖼️ קריאייטיבים</button><button class="toggle-btn" id="toggle-table" onclick="setMode('table')">📊 טבלה</button></div><div id="cards-view"><div class="cards-grid" id="cards-grid"></div></div><div id="table-view" style="display:none"><div class="table-wrap"><div class="table-head"><div></div><div>קריאייטיב</div><div>אדסט</div><div class="cell-center">הוצאה</div><div class="cell-center">ROAS</div><div class="cell-center">CTR</div><div class="cell-center">CPC</div><div class="cell-center">Freq</div><div class="cell-center">סטטוס</div></div><div id="ads-table"></div></div></div><button class="analyze-btn" onclick="runAnalysis()">🤖 קבל ניתוח AI מפורט</button></div>
-<div id="analysis-view"><div class="analysis-panel"><div style="display:flex;align-items:center;gap:12px;margin-bottom:24px"><div style="font-size:24px">🤖</div><div><div style="font-size:16px;font-weight:700">ניתוח AI</div><div style="font-size:12px;color:#555" id="analysis-sub">מנתח...</div></div><button onclick="showView('data')" style="margin-right:auto;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 14px;color:#888;cursor:pointer;font-size:12px">← חזור</button></div><div id="analysis-content"><div style="text-align:center;padding:60px"><div style="font-size:40px;margin-bottom:12px">🤖</div><div style="color:#00ff9d;font-size:16px;font-weight:600">מנתח...</div></div></div></div></div>
+
+<!-- Login Overlay -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h1>Meta Ads Dashboard</h1>
+    <p>הזן את פרטי החיבור לחשבון המטא שלך</p>
+    <input type="password" id="tokenInput" placeholder="Access Token">
+    <input type="text" id="accountInput" placeholder="Ad Account ID" value="882300848610076">
+    <input type="password" id="claudeKeyInput" placeholder="Claude API Key (אופציונלי)">
+    <button onclick="doLogin()">התחבר</button>
+  </div>
 </div>
-<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)"><div class="modal"><button class="modal-close" onclick="document.getElementById('modal-overlay').classList.remove('open')">✕</button><div id="modal-content"></div></div></div>
-<div class="bottom-bar" id="bottom-bar" style="display:none"><select id="bottom-date" onchange="changeDate()"><option value="yesterday">אתמול</option><option value="last_7d" selected>7 ימים</option><option value="last_14d">14 ימים</option><option value="last_30d">30 ימים</option></select><button class="bottom-btn" onclick="fetchData()">🔄 רענן</button><button class="bottom-disconnect" onclick="disconnect()">התנתק</button></div>
+
+<!-- Top Bar -->
+<div class="topbar" id="topbar" style="display:none">
+  <h1>Meta Ads Dashboard</h1>
+  <div class="topbar-actions">
+    <select id="periodSelect">
+      <option value="today">היום</option>
+      <option value="yesterday">אתמול</option>
+      <option value="last_7d" selected>7 ימים</option>
+      <option value="last_14d">14 ימים</option>
+      <option value="last_30d">30 ימים</option>
+      <option value="this_month">חודש נוכחי</option>
+      <option value="last_month">חודש קודם</option>
+    </select>
+    <button class="primary" onclick="fetchData()">טען נתונים</button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content hidden" id="mainContent">
+  <!-- Metrics -->
+  <div class="metrics" id="metricsBar"></div>
+
+  <!-- View Toggle -->
+  <div class="view-toggle">
+    <button class="active" id="btnCards" onclick="setView('cards')">כרטיסים</button>
+    <button id="btnTable" onclick="setView('table')">טבלה</button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="grid" id="cardsGrid"></div>
+
+  <!-- Table -->
+  <div class="table-wrap hidden" id="tableWrap"></div>
+
+  <!-- Analysis -->
+  <button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח Claude AI</button>
+  <div class="analysis-section hidden" id="analysisSection">
+    <div class="analysis-box">
+      <h3>ניתוח Claude AI</h3>
+      <div class="analysis-content" id="analysisContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <button class="close-btn" onclick="document.getElementById('modalOverlay').classList.remove('show')">&times;</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Bottom Bar -->
+<div class="bottombar hidden" id="bottomBar">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <select id="periodSelectBottom">
+      <option value="today">היום</option>
+      <option value="yesterday">אתמול</option>
+      <option value="last_7d" selected>7 ימים</option>
+      <option value="last_14d">14 ימים</option>
+      <option value="last_30d">30 ימים</option>
+      <option value="this_month">חודש נוכחי</option>
+      <option value="last_month">חודש קודם</option>
+    </select>
+    <button class="primary" onclick="fetchData()">🔄 רענן</button>
+  </div>
+  <button class="danger" onclick="doLogout()">🚪 התנתק</button>
+</div>
+
 <script>
-let adsData=[],savedToken='';
-const fmt=n=>{const v=parseFloat(n)||0;return v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(1)+'K':v.toFixed(0)};
-const fmtC=n=>'₪'+fmt(n),fmtPct=n=>(parseFloat(n)||0).toFixed(2)+'%',fmtR=n=>(parseFloat(n)||0).toFixed(2)+'x';
-const roasColor=r=>r>=4?'#00ff9d':r>=2?'#ffcc00':r>=1?'#ff9500':'#ff4444';
-const getStatus=ad=>ad.roas>=3?{label:'🟢 WIN',color:'#00ff9d'}:ad.roas>=1.5?{label:'🟡 OK',color:'#ffcc00'}:ad.spend<50?{label:'⚪ חדש',color:'#888'}:{label:'🔴 STOP',color:'#ff4444'};
-function showView(v){['connect','data','analysis'].forEach(x=>document.getElementById(x+'-view').style.display=x===v?'block':'none');document.getElementById('bottom-bar').style.display=v==='connect'?'none':'flex';document.getElementById('nav-buttons').style.display=v==='connect'?'none':'flex';document.getElementById('btn-data')&&document.getElementById('btn-data').classList.toggle('active',v==='data')}
-function setMode(m){document.getElementById('cards-view').style.display=m==='cards'?'block':'none';document.getElementById('table-view').style.display=m==='table'?'block':'none';document.getElementById('toggle-cards').classList.toggle('active',m==='cards');document.getElementById('toggle-table').classList.toggle('active',m==='table')}
-function disconnect(){adsData=[];savedToken='';showView('connect')}
-function changeDate(){document.getElementById('date-select').value=document.getElementById('bottom-date').value;fetchData()}
-async function fetchData(){
-const token=document.getElementById('token-input').value||savedToken;
-const account=document.getElementById('account-input').value;
-const date=document.getElementById('date-select').value;
-if(!token||!account)return;savedToken=token;
-const btn=document.getElementById('fetch-btn'),eb=document.getElementById('error-box');
-btn.disabled=true;btn.textContent='טוען...';eb.style.display='none';
-try{
-const clean=account.replace('act_','');
-const fields='ad_id,ad_name,adset_name,campaign_name,impressions,clicks,spend,reach,frequency,ctr,cpc,actions,action_values,creative';
-const res=await fetch('https://graph.facebook.com/v19.0/act_'+clean+'/insights?fields='+encodeURIComponent(fields)+'&date_preset='+date+'&level=ad&limit=100&access_token='+token);
-const data=await res.json();
-if(data.error)throw new Error(data.error.message);
-adsData=await Promise.all((data.data||[]).map(async ad=>{
-const getA=t=>parseFloat((ad.actions||[]).find(x=>x.action_type===t)?.value||0);
-const getAV=t=>parseFloat((ad.action_values||[]).find(x=>x.action_type===t)?.value||0);
-const spend=parseFloat(ad.spend||0),purchaseValue=getAV('purchase');
-const roas=spend>0&&purchaseValue>0?purchaseValue/spend:0;
-let thumbnailUrl=null;
-try{const cid=ad.creative?.id;if(cid){const cr=await fetch('https://graph.facebook.com/v19.0/'+cid+'?fields=thumbnail_url&access_token='+token);const cd=await cr.json();thumbnailUrl=cd.thumbnail_url||null}}catch(e){}
-return{...ad,spend,purchaseValue,roas,thumbnailUrl,purchases:getA('purchase'),leads:getA('lead'),addToCart:getA('add_to_cart'),checkouts:getA('initiate_checkout'),landingViews:getA('landing_page_view'),ctr:parseFloat(ad.ctr||0),cpc:parseFloat(ad.cpc||0),impressions:parseInt(ad.impressions||0),clicks:parseInt(ad.clicks||0),reach:parseInt(ad.reach||0),frequency:parseFloat(ad.frequency||0)};
-}));
-adsData.sort((a,b)=>b.spend-a.spend);
-renderMetrics();renderCards();renderTable();showView('data');
-}catch(e){eb.style.display='block';eb.textContent=e.message||'שגיאה'}
-finally{btn.disabled=false;btn.textContent='🚀 שלוף נתונים'}}
-function renderMetrics(){
-const ts=adsData.reduce((s,a)=>s+a.spend,0),tr=adsData.reduce((s,a)=>s+a.purchaseValue,0),tp=adsData.reduce((s,a)=>s+a.purchases,0),or=ts>0?tr/ts:0;
-document.getElementById('metrics-row').innerHTML='<div class="metric-card"><div class="metric-label">סה״כ הוצאה</div><div class="metric-value" style="color:#ff9500">'+fmtC(ts)+'</div></div><div class="metric-card"><div class="metric-label">סה״כ הכנסה</div><div class="metric-value" style="color:#00ff9d">'+fmtC(tr)+'</div></div><div class="metric-card"><div class="metric-label">ROAS כולל</div><div class="metric-value" style="color:'+roasColor(or)+'">'+fmtR(or)+'</div></div><div class="metric-card"><div class="metric-label">רכישות</div><div class="metric-value" style="color:#00ccff">'+tp.toFixed(0)+'</div></div><div class="metric-card"><div class="metric-label">קריאייטיבים</div><div class="metric-value" style="color:#cc88ff">'+adsData.length+'</div><div class="metric-sub">פעילים</div></div>'}
-function renderCards(){
-document.getElementById('cards-grid').innerHTML=adsData.map((ad,i)=>{
-const rc=roasColor(ad.roas),st=getStatus(ad);
-const conv=ad.purchases>0?ad.purchases.toFixed(0)+' רכ':ad.leads>0?ad.leads.toFixed(0)+' לידים':'—';
-const thumb=ad.thumbnailUrl?'<img src="'+ad.thumbnailUrl+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">'
-:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;color:rgba(255,255,255,0.1)">🖼️</div>';
-return '<div class="creative-card" onclick="openModal('+i+')">'
-+'<div class="card-thumb">'+thumb
-+'<div class="card-status-badge" style="background:'+st.color+'22;color:'+st.color+';border:1px solid '+st.color+'44">'+st.label+'</div>'
-+(ad.roas>0?'<div class="card-roas-badge" style="color:'+rc+'">ROAS '+fmtR(ad.roas)+'</div>':'')
-+'</div><div class="card-body"><div class="card-name">'+ad.ad_name+'</div>'
-+'<div class="card-stats">'
-+'<div class="card-stat"><div class="card-stat-label">הוצאה</div><div class="card-stat-value" style="color:#ff9500">₪'+ad.spend.toFixed(0)+'</div></div>'
-+'<div class="card-stat"><div class="card-stat-label">CTR</div><div class="card-stat-value" style="color:'+(ad.ctr>2?'#00ff9d':ad.ctr>1?'#ffcc00':'#888')+'">'+fmtPct(ad.ctr)+'</div></div>'
-+'<div class="card-stat"><div class="card-stat-label">המרות</div><div class="card-stat-value" style="color:#00ccff">'+conv+'</div></div>'
-+'<div class="card-stat"><div class="card-stat-label">Freq</div><div class="card-stat-value" style="color:'+(ad.frequency>4?'#ff4444':'#888')+'">'+ad.frequency.toFixed(1)+'</div></div>'
-+'</div></div></div>';
-}).join('')}
-function renderTable(){
-document.getElementById('ads-table').innerHTML=adsData.map((ad,i)=>{
-const rc=roasColor(ad.roas),st=getStatus(ad);
-const thumb=ad.thumbnailUrl?'<div class="thumb-cell"><img src="'+ad.thumbnailUrl+'" onerror="this.parentElement.innerHTML='🖼️'"></div>':'<div class="thumb-placeholder">🖼️</div>';
-return '<div class="table-row" onclick="openModal('+i+')">'
-+thumb+'<div><div class="ad-name">'+ad.ad_name+'</div><div class="campaign-name">'+ad.campaign_name+'</div></div>'
-+'<div class="adset-name">'+ad.adset_name+'</div>'
-+'<div class="cell-center" style="font-size:13px;font-weight:600;color:#ff9500">₪'+ad.spend.toFixed(0)+'</div>'
-+'<div class="cell-center" style="font-size:14px;font-weight:700;color:'+rc+'">'+(ad.roas>0?fmtR(ad.roas):'—')+'</div>'
-+'<div class="cell-center" style="font-size:13px;color:'+(ad.ctr>2?'#00ff9d':ad.ctr>1?'#ffcc00':'#888')+'">'+fmtPct(ad.ctr)+'</div>'
-+'<div class="cell-center" style="font-size:13px;color:#aaa">₪'+ad.cpc.toFixed(2)+'</div>'
-+'<div class="cell-center" style="font-size:13px;color:'+(ad.frequency>4?'#ff4444':'#888')+'">'+ad.frequency.toFixed(1)+'</div>'
-+'<div class="cell-center"><span class="badge" style="background:'+st.color+'22;color:'+st.color+';border:1px solid '+st.color+'44">'+st.label+'</span></div>'
-+'</div>';
-}).join('')}
-function openModal(i){
-const ad=adsData[i],rc=roasColor(ad.roas),st=getStatus(ad);
-document.getElementById('modal-content').innerHTML=
-(ad.thumbnailUrl?'<img class="modal-thumb" src="'+ad.thumbnailUrl+'" onerror="this.style.display='none'">'
-:'<div style="width:100%;height:180px;background:rgba(255,255,255,0.03);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:60px;margin-bottom:20px">🖼️</div>')
-+'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="badge" style="background:'+st.color+'22;color:'+st.color+';border:1px solid '+st.color+'44">'+st.label+'</span><span style="font-size:12px;color:#555">'+ad.adset_name+'</span></div>'
-+'<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+ad.ad_name+'</div>'
-+'<div style="font-size:11px;color:#444;margin-bottom:16px">'+ad.campaign_name+'</div>'
-+'<div class="modal-stats">'
-+'<div class="modal-stat"><div class="modal-stat-label">הוצאה</div><div class="modal-stat-value" style="color:#ff9500">₪'+ad.spend.toFixed(0)+'</div></div>'
-+'<div class="modal-stat"><div class="modal-stat-label">ROAS</div><div class="modal-stat-value" style="color:'+rc+'">'+(ad.roas>0?fmtR(ad.roas):'—')+'</div></div>'
-+'<div class="modal-stat"><div class="modal-stat-label">הכנסה</div><div class="modal-stat-value" style="color:#00ff9d">₪'+ad.purchaseValue.toFixed(0)+'</div></div>'
-+'<div class="modal-stat"><div class="modal-stat-label">CTR</div><div class="modal-stat-value" style="color:'+(ad.ctr>2?'#00ff9d':ad.ctr>1?'#ffcc00':'#888')+'">'+fmtPct(ad.ctr)+'</div></div>'
-+'<div class="modal-stat"><div class="modal-stat-label">CPC</div><div class="modal-stat-value" style="color:#aaa">₪'+ad.cpc.toFixed(2)+'</div></div>'
-+'<div class="modal-stat"><div class="modal-stat-label">Frequency</div><div class="modal-stat-value" style="color:'+(ad.frequency>4?'#ff4444':'#888')+'">'+ad.frequency.toFixed(1)+'</div></div>'
-+'<div class="modal-stat"><div class="modal-stat-label">חשיפות</div><div class="modal-stat-value" style="color:#aaa">'+ad.impressions.toLocaleString()+'</div></div>'
-+'<div class="modal-stat"><div class="modal-stat-label">Reach</div><div class="modal-stat-value" style="color:#aaa">'+ad.reach.toLocaleString()+'</div></div>'
-+'<div class="modal-stat"><div class="modal-stat-label">Add to Cart</div><div class="modal-stat-value" style="color:#00ccff">'+(ad.addToCart||0)+'</div></div>'
-+'</div>';
-document.getElementById('modal-overlay').classList.add('open')}
-function closeModal(e){if(e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open')}
-async function runAnalysis(){
-if(!adsData.length)return;showView('analysis');
-document.getElementById('analysis-content').innerHTML='<div style="text-align:center;padding:60px"><div style="font-size:40px;margin-bottom:12px">🤖</div><div style="color:#00ff9d;font-size:18px;font-weight:600;margin-bottom:8px">מנתח...</div><div style="color:#555;font-size:14px">כ-15 שניות</div></div>';
-const ts=adsData.reduce((s,a)=>s+a.spend,0),tr=adsData.reduce((s,a)=>s+a.purchaseValue,0),tp=adsData.reduce((s,a)=>s+a.purchases,0);
-const prompt='אתה מומחה מדיה ממומנת.\nסה"כ הוצאה: \u20AA'+ts.toFixed(0)+' | הכנסה: \u20AA'+tr.toFixed(0)+' | ROAS: '+(ts>0?tr/ts:0).toFixed(2)+'x | רכישות: '+tp+'\n\n'+adsData.slice(0,20).map(ad=>'"'+ad.ad_name+'" | '+ad.adset_name+'\nהוצאה: \u20AA'+ad.spend.toFixed(0)+' | ROAS: '+ad.roas.toFixed(2)+'x | CTR: '+ad.ctr.toFixed(2)+'% | Freq: '+ad.frequency.toFixed(1)+' | רכישות: '+ad.purchases).join('\n---\n')+'\n\nספק ניתוח:\n## 🏆 הקריאייטיבים המנצחים\n## 💀 הקריאייטיבים שצריך לעצור\n## 📊 תובנות על הקהלים\n## 🎯 5 פעולות מיידיות\n## 💡 רעיונות לקריאייטיבים חדשים\n## ⚠️ אזהרות וסיכונים\nכתוב בעברית.';
-try{
-const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
-const data=await res.json();
-const text=data.content?.find(c=>c.type==='text')?.text||'שגיאה.';
-document.getElementById('analysis-sub').textContent='מבוסס על '+adsData.length+' קריאייטיבים';
-document.getElementById('analysis-content').innerHTML=text.split('\n').map(l=>l.startsWith('## ')?'<div class="analysis-h2">'+l.slice(3)+'</div>':l.trim()===''?'<div style="height:8px"></div>':'<div class="analysis-p">'+l+'</div>').join('');
-}catch(e){document.getElementById('analysis-content').innerHTML='<p style="color:#ff6666">שגיאה בניתוח.</p>'}}
+/* =========================================
+   META ADS DASHBOARD - All globals
+   ========================================= */
+
+var TOKEN = '';
+var ACCOUNT_ID = '';
+var CLAUDE_KEY = '';
+var adsData = [];
+var currentView = 'cards';
+
+/* ---- Login / Logout ---- */
+
+function doLogin() {
+  var t = document.getElementById('tokenInput').value.trim();
+  var a = document.getElementById('accountInput').value.trim();
+  var c = document.getElementById('claudeKeyInput').value.trim();
+  if (!t) { alert('יש להזין Access Token'); return; }
+  if (!a) { alert('יש להזין Ad Account ID'); return; }
+  TOKEN = t;
+  ACCOUNT_ID = a;
+  CLAUDE_KEY = c;
+  sessionStorage.setItem('meta_token', t);
+  sessionStorage.setItem('meta_account', a);
+  if (c) sessionStorage.setItem('claude_key', c);
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('topbar').style.display = '';
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('bottomBar').classList.remove('hidden');
+  fetchData();
+}
+
+function doLogout() {
+  sessionStorage.clear();
+  TOKEN = '';
+  ACCOUNT_ID = '';
+  CLAUDE_KEY = '';
+  adsData = [];
+  document.getElementById('loginOverlay').style.display = '';
+  document.getElementById('topbar').style.display = 'none';
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('bottomBar').classList.add('hidden');
+  document.getElementById('tokenInput').value = '';
+  document.getElementById('claudeKeyInput').value = '';
+}
+
+/* ---- Restore session ---- */
+
+(function restoreSession() {
+  var t = sessionStorage.getItem('meta_token');
+  var a = sessionStorage.getItem('meta_account');
+  var c = sessionStorage.getItem('claude_key');
+  if (t && a) {
+    TOKEN = t;
+    ACCOUNT_ID = a;
+    CLAUDE_KEY = c || '';
+    document.getElementById('tokenInput').value = t;
+    document.getElementById('accountInput').value = a;
+    if (c) document.getElementById('claudeKeyInput').value = c;
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('topbar').style.display = '';
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.getElementById('bottomBar').classList.remove('hidden');
+    fetchData();
+  }
+})();
+
+/* ---- Sync period selects ---- */
+
+document.getElementById('periodSelect').addEventListener('change', function() {
+  document.getElementById('periodSelectBottom').value = this.value;
+});
+document.getElementById('periodSelectBottom').addEventListener('change', function() {
+  document.getElementById('periodSelect').value = this.value;
+});
+
+/* ---- Fetch Data ---- */
+
+function fetchData() {
+  var period = document.getElementById('periodSelect').value;
+  var url = 'https://graph.facebook.com/v19.0/act_' + ACCOUNT_ID + '/insights'
+    + '?fields=ad_id,ad_name,adset_name,campaign_name,impressions,clicks,spend,reach,frequency,ctr,cpc,actions,action_values,creative'
+    + '&level=ad&date_preset=' + period
+    + '&limit=200&access_token=' + TOKEN;
+
+  document.getElementById('cardsGrid').innerHTML = '<div class="loading"><span class="spinner"></span> טוען נתונים מ-Meta...</div>';
+  document.getElementById('tableWrap').innerHTML = '';
+  document.getElementById('metricsBar').innerHTML = '';
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (json.error) {
+        document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאה: ' + escHtml(json.error.message) + '</div>';
+        return;
+      }
+      var data = json.data || [];
+      if (data.length === 0) {
+        document.getElementById('cardsGrid').innerHTML = '<div class="loading">אין נתונים לתקופה הנבחרת</div>';
+        return;
+      }
+      adsData = data.map(parseAd);
+      // Fetch thumbnails
+      var thumbPromises = adsData.map(function(ad) {
+        if (ad.creativeId) {
+          return fetch('https://graph.facebook.com/v19.0/' + ad.creativeId + '?fields=thumbnail_url&access_token=' + TOKEN)
+            .then(function(r) { return r.json(); })
+            .then(function(j) { ad.thumbnail = j.thumbnail_url || ''; })
+            .catch(function() { ad.thumbnail = ''; });
+        }
+        return Promise.resolve();
+      });
+      Promise.all(thumbPromises).then(function() {
+        renderMetrics();
+        renderCards();
+        renderTable();
+      });
+    })
+    .catch(function(err) {
+      document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאת רשת: ' + escHtml(err.message) + '</div>';
+    });
+}
+
+/* ---- Parse ad data ---- */
+
+function parseAd(ad) {
+  var spend = parseFloat(ad.spend) || 0;
+  var purchases = 0;
+  var revenue = 0;
+  if (ad.actions) {
+    ad.actions.forEach(function(a) {
+      if (a.action_type === 'purchase' || a.action_type === 'offsite_conversion.fb_pixel_purchase') {
+        purchases += parseInt(a.value) || 0;
+      }
+    });
+  }
+  if (ad.action_values) {
+    ad.action_values.forEach(function(a) {
+      if (a.action_type === 'purchase' || a.action_type === 'offsite_conversion.fb_pixel_purchase') {
+        revenue += parseFloat(a.value) || 0;
+      }
+    });
+  }
+  var roas = spend > 0 ? revenue / spend : 0;
+  var status = 'new';
+  if (spend >= 50) {
+    if (roas >= 3) status = 'win';
+    else if (roas >= 1.5) status = 'ok';
+    else status = 'stop';
+  }
+  return {
+    id: ad.ad_id,
+    name: ad.ad_name || 'ללא שם',
+    adset: ad.adset_name || '',
+    campaign: ad.campaign_name || '',
+    spend: spend,
+    impressions: parseInt(ad.impressions) || 0,
+    clicks: parseInt(ad.clicks) || 0,
+    reach: parseInt(ad.reach) || 0,
+    frequency: parseFloat(ad.frequency) || 0,
+    ctr: parseFloat(ad.ctr) || 0,
+    cpc: parseFloat(ad.cpc) || 0,
+    purchases: purchases,
+    revenue: revenue,
+    roas: roas,
+    status: status,
+    creativeId: (ad.creative && ad.creative.id) ? ad.creative.id : '',
+    thumbnail: ''
+  };
+}
+
+/* ---- Render Metrics ---- */
+
+function renderMetrics() {
+  var totalSpend = 0, totalRevenue = 0, totalPurchases = 0;
+  adsData.forEach(function(ad) {
+    totalSpend += ad.spend;
+    totalRevenue += ad.revenue;
+    totalPurchases += ad.purchases;
+  });
+  var totalRoas = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : '0';
+  var html = ''
+    + metricHtml('הוצאה כוללת', formatCurrency(totalSpend))
+    + metricHtml('הכנסה כוללת', formatCurrency(totalRevenue))
+    + metricHtml('ROAS כולל', totalRoas + 'x')
+    + metricHtml('רכישות', totalPurchases.toLocaleString())
+    + metricHtml('קריאייטיבים', adsData.length.toString());
+  document.getElementById('metricsBar').innerHTML = html;
+}
+
+function metricHtml(label, value) {
+  return '<div class="metric-card"><div class="label">' + label + '</div><div class="value">' + value + '</div></div>';
+}
+
+/* ---- Render Cards ---- */
+
+function renderCards() {
+  var html = '';
+  adsData.forEach(function(ad, i) {
+    var statusBadge = getStatusBadge(ad.status);
+    var thumbHtml = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="creative" onerror="this.parentNode.innerHTML=\'&#x1f5bc;&#xfe0f;\'">'
+      : '\uD83D\uDDBC\uFE0F';
+    html += '<div class="ad-card" onclick="openModal(' + i + ')">'
+      + '<div class="thumb">' + thumbHtml + '</div>'
+      + '<div class="badge-status ' + statusBadge.cls + '">' + statusBadge.text + '</div>'
+      + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
+      + '<div class="info">'
+      + '<div class="name" title="' + escAttr(ad.name) + '">' + escHtml(ad.name) + '</div>'
+      + '<div class="adset" title="' + escAttr(ad.adset) + '">' + escHtml(ad.adset) + '</div>'
+      + '<div class="stats">'
+      + '<div class="stat"><span>הוצאה: </span>' + formatCurrency(ad.spend) + '</div>'
+      + '<div class="stat"><span>CTR: </span>' + ad.ctr.toFixed(2) + '%</div>'
+      + '<div class="stat"><span>המרות: </span>' + ad.purchases + '</div>'
+      + '<div class="stat"><span>Freq: </span>' + ad.frequency.toFixed(2) + '</div>'
+      + '</div></div></div>';
+  });
+  document.getElementById('cardsGrid').innerHTML = html || '<div class="loading">אין נתונים</div>';
+}
+
+/* ---- Render Table ---- */
+
+function renderTable() {
+  var html = '<table><thead><tr>'
+    + '<th></th><th>קריאייטיב</th><th>אדסט</th><th>הוצאה</th><th>ROAS</th><th>CTR</th><th>CPC</th><th>Freq</th><th>המרות</th><th>סטטוס</th>'
+    + '</tr></thead><tbody>';
+  adsData.forEach(function(ad, i) {
+    var statusBadge = getStatusBadge(ad.status);
+    var thumbHtml = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" onerror="this.parentNode.innerHTML=\'&#x1f5bc;&#xfe0f;\'">'
+      : '\uD83D\uDDBC\uFE0F';
+    html += '<tr onclick="openModal(' + i + ')" style="cursor:pointer">'
+      + '<td><div class="thumb-cell">' + thumbHtml + '</div></td>'
+      + '<td>' + escHtml(ad.name) + '</td>'
+      + '<td>' + escHtml(ad.adset) + '</td>'
+      + '<td>' + formatCurrency(ad.spend) + '</td>'
+      + '<td>' + ad.roas.toFixed(2) + '</td>'
+      + '<td>' + ad.ctr.toFixed(2) + '%</td>'
+      + '<td>' + formatCurrency(ad.cpc) + '</td>'
+      + '<td>' + ad.frequency.toFixed(2) + '</td>'
+      + '<td>' + ad.purchases + '</td>'
+      + '<td><span class="badge-status ' + statusBadge.cls + '" style="position:static">' + statusBadge.text + '</span></td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('tableWrap').innerHTML = html;
+}
+
+/* ---- View Toggle ---- */
+
+function setView(view) {
+  currentView = view;
+  document.getElementById('btnCards').classList.toggle('active', view === 'cards');
+  document.getElementById('btnTable').classList.toggle('active', view === 'table');
+  document.getElementById('cardsGrid').classList.toggle('hidden', view !== 'cards');
+  document.getElementById('tableWrap').classList.toggle('hidden', view !== 'table');
+}
+
+/* ---- Modal ---- */
+
+function openModal(index) {
+  var ad = adsData[index];
+  if (!ad) return;
+  var imgHtml = ad.thumbnail
+    ? '<img class="modal-img" src="' + escAttr(ad.thumbnail) + '" alt="creative" onerror="this.style.display=\'none\'">'
+    : '';
+  var html = imgHtml
+    + '<div class="modal-title">' + escHtml(ad.name) + '</div>'
+    + '<div class="modal-sub">' + escHtml(ad.campaign) + ' &bull; ' + escHtml(ad.adset) + '</div>'
+    + '<div class="modal-stats">'
+    + modalStat('הוצאה', formatCurrency(ad.spend))
+    + modalStat('הכנסה', formatCurrency(ad.revenue))
+    + modalStat('ROAS', ad.roas.toFixed(2) + 'x')
+    + modalStat('רכישות', ad.purchases.toString())
+    + modalStat('חשיפות', ad.impressions.toLocaleString())
+    + modalStat('קליקים', ad.clicks.toLocaleString())
+    + modalStat('CTR', ad.ctr.toFixed(2) + '%')
+    + modalStat('CPC', formatCurrency(ad.cpc))
+    + modalStat('Reach', ad.reach.toLocaleString())
+    + modalStat('Frequency', ad.frequency.toFixed(2))
+    + '</div>';
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('show');
+  }
+}
+
+function modalStat(label, value) {
+  return '<div class="ms"><div class="ms-label">' + label + '</div><div class="ms-value">' + value + '</div></div>';
+}
+
+/* ---- Claude AI Analysis ---- */
+
+function runAnalysis() {
+  if (!CLAUDE_KEY) {
+    alert('יש להזין Claude API Key בעת ההתחברות');
+    return;
+  }
+  if (adsData.length === 0) {
+    alert('אין נתונים לנתח. טען נתונים קודם.');
+    return;
+  }
+
+  var btn = document.getElementById('analysisBtn');
+  btn.disabled = true;
+  btn.textContent = '\u23F3 מנתח...';
+
+  var summary = adsData.map(function(ad) {
+    return {
+      name: ad.name,
+      adset: ad.adset,
+      campaign: ad.campaign,
+      spend: ad.spend.toFixed(2),
+      revenue: ad.revenue.toFixed(2),
+      roas: ad.roas.toFixed(2),
+      purchases: ad.purchases,
+      ctr: ad.ctr.toFixed(2),
+      cpc: ad.cpc.toFixed(2),
+      frequency: ad.frequency.toFixed(2),
+      impressions: ad.impressions,
+      status: ad.status
+    };
+  });
+
+  var prompt = 'אתה מומחה פרסום דיגיטלי. נתח את נתוני הקריאייטיבים הבאים מ-Meta Ads וספק ניתוח מקיף בעברית עם הסעיפים הבאים:\n\n'
+    + '\uD83C\uDFC6 הקריאייטיבים המנצחים\n'
+    + '\uD83D\uDC80 הקריאייטיבים שצריך לעצור\n'
+    + '\uD83D\uDCCA תובנות על הקהלים (לפי אדסטים)\n'
+    + '\uD83C\uDFAF 5 פעולות מיידיות\n'
+    + '\uD83D\uDCA1 רעיונות לקריאייטיבים חדשים\n'
+    + '\u26A0\uFE0F אזהרות וסיכונים\n\n'
+    + 'הנתונים:\n' + JSON.stringify(summary, null, 2);
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': CLAUDE_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(json) {
+    btn.disabled = false;
+    btn.textContent = '\uD83E\uDD16 \u05E0\u05D9\u05EA\u05D5\u05D7 Claude AI';
+    if (json.error) {
+      alert('שגיאת Claude: ' + (json.error.message || JSON.stringify(json.error)));
+      return;
+    }
+    var text = (json.content && json.content[0] && json.content[0].text) || 'לא התקבלה תשובה';
+    document.getElementById('analysisContent').textContent = text;
+    document.getElementById('analysisSection').classList.remove('hidden');
+    document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
+  })
+  .catch(function(err) {
+    btn.disabled = false;
+    btn.textContent = '\uD83E\uDD16 \u05E0\u05D9\u05EA\u05D5\u05D7 Claude AI';
+    alert('שגיאת רשת: ' + err.message);
+  });
+}
+
+/* ---- Helpers ---- */
+
+function getStatusBadge(status) {
+  switch (status) {
+    case 'win':  return { cls: 'badge-win',  text: '\uD83D\uDFE2 WIN' };
+    case 'ok':   return { cls: 'badge-ok',   text: '\uD83D\uDFE1 OK' };
+    case 'stop': return { cls: 'badge-stop', text: '\uD83D\uDD34 STOP' };
+    default:     return { cls: 'badge-new',  text: '\u26AA \u05D7\u05D3\u05E9' };
+  }
+}
+
+function formatCurrency(n) {
+  return '\u20AA' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function escHtml(s) {
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
+
+function escAttr(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 </script>
 </body>
 </html>
