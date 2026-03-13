@@ -1058,8 +1058,8 @@ function loadAdPreview(ad) {
               if (img.naturalWidth > 100 && img.naturalHeight > 100) {
                 var src = img.src;
                 if (src && src.indexOf('data:') !== 0 && src.indexOf('/rsrc.php') === -1) {
-                  ad.thumbnail = src;
-                  ad.imageSource = 'preview';
+                  ad.visuals.cardImageUrl = src;
+                  ad.visuals.cardImageSource = 'preview';
                   renderCards();
                   if (currentView === 'compact') renderCompactCards();
                   renderTable();
