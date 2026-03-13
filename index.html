@@ -713,13 +713,25 @@ function loadExpandedPreviewsSequentially(items, idx) {
 
   var item = items[idx];
   var ad = item.ad;
+  var cardIndex = item.i;
 
   fetchExpandedPreview(ad)
     .then(function() {
+      if (currentView !== 'expanded') return;
       var grid = document.getElementById('expandedGrid');
-      if (!grid.classList.contains('hidden') && currentView === 'expanded') {
-        renderExpandedCards();
-      }
+      var card = grid && grid.children[cardIndex];
+      if (!card || !ad.previewBody) return;
+      var wrap = card.querySelector('.exp-preview-wrap');
+      if (!wrap) return;
+      var carouselBadge = (ad.creativeType === 'carousel' && ad.carouselCount > 0)
+        ? '<div class="exp-carousel-badge">&#127904; x' + ad.carouselCount + '</div>' : '';
+      wrap.innerHTML =
+        '<div class="exp-preview-label">תצוגה מקדימה של המודעה</div>'
+        + '<div class="exp-preview-shell">'
+        + '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>'
+        + '<div class="exp-media-badge">' + esc(ad.mediaLabel || 'Creative') + '</div>'
+        + carouselBadge
+        + '</div>';
     })
     .catch(function() {
       /* ignore individual preview failures */
