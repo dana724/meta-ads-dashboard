@@ -958,6 +958,28 @@ function loadAdPreview(ad) {
       }
       var body = json.data[0].body;
       wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(body) + '"></iframe>';
+      var iframe = wrap.querySelector('iframe');
+      if (iframe) {
+        iframe.onload = function() {
+          try {
+            var iDoc = iframe.contentDocument || iframe.contentWindow.document;
+            var imgs = iDoc.querySelectorAll('img');
+            for (var i = 0; i < imgs.length; i++) {
+              var img = imgs[i];
+              if (img.naturalWidth > 100 && img.naturalHeight > 100) {
+                var src = img.src;
+                if (src && src.indexOf('data:') !== 0 && src.indexOf('/rsrc.php') === -1) {
+                  ad.thumbnail = src;
+                  ad.imageSource = 'preview';
+                  renderCards();
+                  renderTable();
+                  break;
+                }
+              }
+            }
+          } catch(e) {}
+        };
+      }
     })
     .catch(function() {
       var wrap = document.getElementById('adPreviewWrap');
