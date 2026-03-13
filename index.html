@@ -79,30 +79,26 @@ a{color:var(--accent);text-decoration:none}
 .preview-toggle{position:absolute;bottom:190px;right:10px;padding:2px 8px;font-size:10px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10;transition:opacity .2s}
 .preview-toggle:hover{opacity:.85}
 
-/* ===== Expanded Creative View (Preview Gallery) ===== */
-.grid-expanded{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;padding:0 24px 24px;align-items:start}
-.expanded-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;position:relative;display:flex;flex-direction:column;min-height:760px}
-.expanded-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 10px 28px rgba(0,0,0,.18)}
-.exp-top{padding:18px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
-.exp-top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:10px}
-.exp-name{font-size:22px;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.exp-sub{font-size:13px;color:var(--dim);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.exp-status{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0}
-.exp-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.exp-metrics .em{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:10px 8px;text-align:center}
-.exp-metrics .em .em-val{font-size:16px;font-weight:700;color:var(--text)}
-.exp-metrics .em .em-lbl{font-size:10px;color:var(--dim);margin-top:3px}
-.exp-preview-wrap{padding:18px}
-.exp-preview-label{font-size:12px;color:var(--dim);margin-bottom:8px}
-.exp-preview-shell{position:relative;background:#fff;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;min-height:520px}
-.exp-preview-shell iframe{width:100%;height:520px;border:none;display:block;background:#fff}
-.exp-preview-shell .pv-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--surface);color:var(--dim);font-size:13px}
-.exp-media-badge{position:absolute;bottom:12px;right:12px;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.68);color:#fff;font-size:11px;font-weight:700;z-index:2}
-.exp-carousel-badge{position:absolute;bottom:12px;left:12px;padding:5px 10px;border-radius:999px;background:rgba(120,80,255,.8);color:#fff;font-size:11px;font-weight:700;z-index:2}
-.exp-fallback{min-height:520px;display:flex;align-items:center;justify-content:center;background:var(--surface);color:var(--dim);font-size:60px;position:relative;overflow:hidden}
-.exp-fallback img{width:100%;height:520px;object-fit:cover;display:block}
-@media(max-width:1100px){.grid-expanded{grid-template-columns:1fr}}
-@media(max-width:700px){.exp-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.expanded-card{min-height:auto}.exp-preview-shell,.exp-fallback{min-height:420px}.exp-preview-shell iframe,.exp-fallback img{height:420px}.exp-name{font-size:18px}}
+/* ===== Expanded Cards Grid ===== */
+.grid-expanded{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px;padding:0 24px 24px}
+.expanded-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}
+.expanded-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.expanded-card .thumb{width:100%;height:500px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:64px;color:var(--dim);overflow:hidden}
+.expanded-card .thumb img{width:100%;height:100%;object-fit:cover}
+.expanded-card .thumb iframe{width:100%;height:100%;border:none;pointer-events:none}
+.expanded-card .badge-status{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;backdrop-filter:blur(8px)}
+.expanded-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}
+.expanded-card .badge-carousel{position:absolute;top:42px;left:10px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.75);color:#fff;backdrop-filter:blur(8px)}
+.expanded-card .badge-media{position:absolute;bottom:506px;left:10px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.5px;backdrop-filter:blur(8px);background:rgba(255,255,255,.15);color:#ccc}
+.expanded-card .preview-toggle{bottom:510px;right:10px}
+.expanded-card .info{padding:16px}
+.expanded-card .info .name{font-size:16px;font-weight:700;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expanded-card .info .headline{font-size:13px;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expanded-card .info .body-text{font-size:12px;color:var(--dim);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.expanded-card .info .adset{font-size:11px;color:var(--dim);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expanded-card .info .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.expanded-card .info .stats .stat{font-size:12px}
+.expanded-card .info .stats .stat span{color:var(--dim)}
 
 /* ===== Compact Cards Grid ===== */
 .grid-compact{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:0 24px 24px}
@@ -174,6 +170,7 @@ a{color:var(--accent);text-decoration:none}
 @media(max-width:600px){
   .metrics{grid-template-columns:1fr 1fr}
   .grid{grid-template-columns:1fr}
+  .grid-expanded{grid-template-columns:1fr}
   .grid-compact{grid-template-columns:1fr 1fr}
   .topbar{padding:12px 16px}
   .topbar h1{font-size:16px}
@@ -635,133 +632,45 @@ function statCell(label, value) {
    ============================================ */
 
 function renderExpandedCards() {
-  var grid = document.getElementById('expandedGrid');
-
   if (adsData.length === 0) {
-    grid.innerHTML = '<div class="loading">אין נתונים</div>';
+    document.getElementById('expandedGrid').innerHTML = '<div class="loading">אין נתונים</div>';
     return;
   }
-
   var html = '';
-
   adsData.forEach(function(ad, i) {
     var sb = statusBadge(ad.status);
+    var thumbHtml = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      : '&#128444;&#65039;';
     var carouselBadge = (ad.creativeType === 'carousel' && ad.carouselCount > 0)
-      ? '<div class="exp-carousel-badge">&#127904; x' + ad.carouselCount + '</div>'
-      : '';
+      ? '<div class="badge-carousel">&#127904; x' + ad.carouselCount + '</div>' : '';
+    var headlineHtml = ad.headline
+      ? '<div class="headline" title="' + escAttr(ad.headline) + '">' + esc(truncate(ad.headline, 80)) + '</div>' : '';
+    var bodyHtml = ad.bodyText
+      ? '<div class="body-text">' + esc(truncate(ad.bodyText, 120)) + '</div>' : '';
 
-    var previewContent = '';
-
-    if (ad.previewBody) {
-      previewContent =
-        '<div class="exp-preview-shell">'
-        + '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>'
-        + '<div class="exp-media-badge">' + esc(ad.mediaLabel || 'Creative') + '</div>'
-        + carouselBadge
-        + '</div>';
-    } else if (ad.thumbnail) {
-      previewContent =
-        '<div class="exp-fallback">'
-        + '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.parentNode.innerHTML=\'&#128444;&#65039;\'">'
-        + '<div class="exp-media-badge">' + esc(ad.mediaLabel || 'Creative') + '</div>'
-        + carouselBadge
-        + '</div>';
-    } else {
-      previewContent =
-        '<div class="exp-fallback">'
-        + '&#128444;&#65039;'
-        + '<div class="exp-media-badge">' + esc(ad.mediaLabel || 'Creative') + '</div>'
-        + carouselBadge
-        + '</div>';
-    }
-
-    html += ''
-      + '<div class="expanded-card" onclick="openModal(' + i + ')">'
-      +   '<div class="exp-top">'
-      +     '<div class="exp-top-row">'
-      +       '<div style="min-width:0">'
-      +         '<div class="exp-name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
-      +         '<div class="exp-sub" title="' + escAttr(ad.adset) + '">' + esc(ad.adset || '') + '</div>'
-      +       '</div>'
-      +       '<div class="exp-status ' + sb.cls + '">' + sb.label + '</div>'
-      +     '</div>'
-      +     '<div class="exp-metrics">'
-      +       '<div class="em"><div class="em-val">' + ad.roas.toFixed(2) + 'x</div><div class="em-lbl">ROAS</div></div>'
-      +       '<div class="em"><div class="em-val">' + formatNIS(ad.spend) + '</div><div class="em-lbl">הוצאה</div></div>'
-      +       '<div class="em"><div class="em-val">' + formatNIS(ad.revenue) + '</div><div class="em-lbl">הכנסה</div></div>'
-      +       '<div class="em"><div class="em-val">' + ad.purchases + '</div><div class="em-lbl">רכישות</div></div>'
-      +     '</div>'
-      +   '</div>'
-      +   '<div class="exp-preview-wrap">'
-      +     '<div class="exp-preview-label">תצוגה מקדימה של המודעה</div>'
-      +     previewContent
-      +   '</div>'
-      + '</div>';
+    html += '<div class="expanded-card" onclick="openModal(' + i + ')">'
+      + '<div class="thumb" id="exp-thumb-' + i + '">' + thumbHtml + '</div>'
+      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ',\'exp-thumb-' + i + '\')">&#128065; Preview</button>'
+      + '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>'
+      + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
+      + '<div class="badge-media">' + esc(ad.mediaLabel) + '</div>'
+      + carouselBadge
+      + '<div class="info">'
+      + '<div class="name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
+      + headlineHtml
+      + bodyHtml
+      + '<div class="adset" title="' + escAttr(ad.adset) + '">' + esc(ad.adset) + '</div>'
+      + '<div class="stats">'
+      + statCell('הוצאה', formatNIS(ad.spend))
+      + statCell('הכנסה', formatNIS(ad.revenue))
+      + statCell('ROAS', ad.roas.toFixed(2))
+      + statCell('CTR', ad.ctr.toFixed(2) + '%')
+      + statCell('המרות', String(ad.purchases))
+      + statCell('Freq', ad.frequency.toFixed(2))
+      + '</div></div></div>';
   });
-
-  grid.innerHTML = html;
-
-  var missing = adsData
-    .map(function(ad, i) { return { ad: ad, i: i }; })
-    .filter(function(x) { return !x.ad.previewBody && !x.ad._expandedPreviewLoading; });
-
-  loadExpandedPreviewsSequentially(missing, 0);
-}
-
-function loadExpandedPreviewsSequentially(items, idx) {
-  if (!items || idx >= items.length) return;
-
-  var item = items[idx];
-  var ad = item.ad;
-  var cardIndex = item.i;
-
-  fetchExpandedPreview(ad)
-    .then(function() {
-      if (currentView !== 'expanded') return;
-      var grid = document.getElementById('expandedGrid');
-      var card = grid && grid.children[cardIndex];
-      if (!card || !ad.previewBody) return;
-      var wrap = card.querySelector('.exp-preview-wrap');
-      if (!wrap) return;
-      var carouselBadge = (ad.creativeType === 'carousel' && ad.carouselCount > 0)
-        ? '<div class="exp-carousel-badge">&#127904; x' + ad.carouselCount + '</div>' : '';
-      wrap.innerHTML =
-        '<div class="exp-preview-label">תצוגה מקדימה של המודעה</div>'
-        + '<div class="exp-preview-shell">'
-        + '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>'
-        + '<div class="exp-media-badge">' + esc(ad.mediaLabel || 'Creative') + '</div>'
-        + carouselBadge
-        + '</div>';
-    })
-    .catch(function() {
-      /* ignore individual preview failures */
-    })
-    .finally(function() {
-      loadExpandedPreviewsSequentially(items, idx + 1);
-    });
-}
-
-function fetchExpandedPreview(ad) {
-  if (!ad || ad.previewBody || ad._expandedPreviewLoading) return Promise.resolve(ad);
-
-  ad._expandedPreviewLoading = true;
-
-  var url = META_API + '/' + ad.id + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
-
-  return fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(json) {
-      if (json && json.data && json.data[0] && json.data[0].body) {
-        ad.previewBody = json.data[0].body;
-        ad.previewLoaded = true;
-      }
-      ad._expandedPreviewLoading = false;
-      return ad;
-    })
-    .catch(function() {
-      ad._expandedPreviewLoading = false;
-      return ad;
-    });
+  document.getElementById('expandedGrid').innerHTML = html;
 }
 
 /* ============================================
