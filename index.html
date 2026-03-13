@@ -79,26 +79,29 @@ a{color:var(--accent);text-decoration:none}
 .preview-toggle{position:absolute;bottom:190px;right:10px;padding:2px 8px;font-size:10px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10;transition:opacity .2s}
 .preview-toggle:hover{opacity:.85}
 
-/* ===== Expanded Cards Grid ===== */
-.grid-expanded{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px;padding:0 24px 24px}
-.expanded-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}
-.expanded-card:hover{transform:translateY(-3px);border-color:var(--accent)}
-.expanded-card .thumb{width:100%;height:320px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:64px;color:var(--dim);overflow:hidden}
-.expanded-card .thumb img{width:100%;height:100%;object-fit:cover}
-.expanded-card .thumb iframe{width:100%;height:100%;border:none;pointer-events:none}
-.expanded-card .badge-status{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;backdrop-filter:blur(8px)}
-.expanded-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}
-.expanded-card .badge-carousel{position:absolute;top:42px;left:10px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.75);color:#fff;backdrop-filter:blur(8px)}
-.expanded-card .badge-media{position:absolute;bottom:326px;left:10px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.5px;backdrop-filter:blur(8px);background:rgba(255,255,255,.15);color:#ccc}
-.expanded-card .preview-toggle{bottom:330px;right:10px}
-.expanded-card .info{padding:16px}
-.expanded-card .info .name{font-size:16px;font-weight:700;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.expanded-card .info .headline{font-size:13px;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.expanded-card .info .body-text{font-size:12px;color:var(--dim);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.expanded-card .info .adset{font-size:11px;color:var(--dim);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.expanded-card .info .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.expanded-card .info .stats .stat{font-size:12px}
-.expanded-card .info .stats .stat span{color:var(--dim)}
+/* ===== Expanded Creative View (Gallery) ===== */
+.grid-expanded{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;padding:0 24px 24px}
+.expanded-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;position:relative;display:flex;flex-direction:row}
+.expanded-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.exp-visual{flex:0 0 70%;max-width:70%;height:420px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:72px;color:var(--dim);overflow:hidden;position:relative}
+.exp-visual img{width:100%;height:100%;object-fit:cover}
+.exp-visual iframe{width:100%;height:100%;border:none;pointer-events:none}
+.exp-visual .badge-status{position:absolute;top:12px;right:12px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;backdrop-filter:blur(8px)}
+.exp-visual .badge-roas{position:absolute;top:12px;left:12px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(0,0,0,.7);color:#fff;backdrop-filter:blur(8px)}
+.exp-visual .badge-media{position:absolute;bottom:12px;left:12px;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.5px;backdrop-filter:blur(8px);background:rgba(255,255,255,.18);color:#ddd}
+.exp-visual .badge-carousel{position:absolute;bottom:12px;right:12px;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.8);color:#fff;backdrop-filter:blur(8px)}
+.exp-preview-btn{position:absolute;top:50%;left:70%;transform:translate(-100%,-50%);padding:4px 12px;font-size:11px;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:10px;cursor:pointer;z-index:10;opacity:0;transition:opacity .2s}
+.expanded-card:hover .exp-preview-btn{opacity:1}
+.exp-meta{flex:0 0 30%;max-width:30%;padding:20px 16px;display:flex;flex-direction:column;justify-content:center;gap:12px;overflow:hidden}
+.exp-meta .exp-name{font-size:15px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.exp-meta .exp-headline{font-size:13px;color:var(--text);opacity:.85;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.exp-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.exp-metrics .em{text-align:center;padding:6px 0}
+.exp-metrics .em .em-val{font-size:16px;font-weight:700;color:var(--text)}
+.exp-metrics .em .em-lbl{font-size:10px;color:var(--dim);margin-top:2px}
+@media(max-width:1400px){.grid-expanded{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.grid-expanded{grid-template-columns:1fr}.exp-visual{flex:0 0 60%;max-width:60%;height:320px}.exp-meta{flex:0 0 40%;max-width:40%}}
+@media(max-width:600px){.expanded-card{flex-direction:column}.exp-visual{flex:none;max-width:100%;height:260px}.exp-meta{flex:none;max-width:100%;padding:14px}}
 
 /* ===== Compact Cards Grid ===== */
 .grid-compact{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:0 24px 24px}
@@ -170,7 +173,6 @@ a{color:var(--accent);text-decoration:none}
 @media(max-width:600px){
   .metrics{grid-template-columns:1fr 1fr}
   .grid{grid-template-columns:1fr}
-  .grid-expanded{grid-template-columns:1fr}
   .grid-compact{grid-template-columns:1fr 1fr}
   .topbar{padding:12px 16px}
   .topbar h1{font-size:16px}
@@ -645,30 +647,26 @@ function renderExpandedCards() {
     var carouselBadge = (ad.creativeType === 'carousel' && ad.carouselCount > 0)
       ? '<div class="badge-carousel">&#127904; x' + ad.carouselCount + '</div>' : '';
     var headlineHtml = ad.headline
-      ? '<div class="headline" title="' + escAttr(ad.headline) + '">' + esc(truncate(ad.headline, 80)) + '</div>' : '';
-    var bodyHtml = ad.bodyText
-      ? '<div class="body-text">' + esc(truncate(ad.bodyText, 120)) + '</div>' : '';
+      ? '<div class="exp-headline" title="' + escAttr(ad.headline) + '">' + esc(truncate(ad.headline, 60)) + '</div>' : '';
 
-    html += '<div class="expanded-card" onclick="openModal(' + i + ')">'
-      + '<div class="thumb" id="exp-thumb-' + i + '">' + thumbHtml + '</div>'
-      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ',\'exp-thumb-' + i + '\')">&#128065; Preview</button>'
-      + '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>'
-      + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
-      + '<div class="badge-media">' + esc(ad.mediaLabel) + '</div>'
-      + carouselBadge
-      + '<div class="info">'
-      + '<div class="name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
-      + headlineHtml
-      + bodyHtml
-      + '<div class="adset" title="' + escAttr(ad.adset) + '">' + esc(ad.adset) + '</div>'
-      + '<div class="stats">'
-      + statCell('הוצאה', formatNIS(ad.spend))
-      + statCell('הכנסה', formatNIS(ad.revenue))
-      + statCell('ROAS', ad.roas.toFixed(2))
-      + statCell('CTR', ad.ctr.toFixed(2) + '%')
-      + statCell('המרות', String(ad.purchases))
-      + statCell('Freq', ad.frequency.toFixed(2))
-      + '</div></div></div>';
+    html += '<div class="expanded-card" onclick="openModal(' + i + ')">';
+    html += '<div class="exp-visual" id="exp-thumb-' + i + '">';
+    html += thumbHtml;
+    html += '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>';
+    html += '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>';
+    html += '<div class="badge-media">' + esc(ad.mediaLabel) + '</div>';
+    html += carouselBadge;
+    html += '</div>';
+    html += '<button class="exp-preview-btn" onclick="togglePreview(event,' + i + ',\'exp-thumb-' + i + '\')">&#128065; Preview</button>';
+    html += '<div class="exp-meta">';
+    html += '<div class="exp-name" title="' + escAttr(ad.name) + '">' + esc(truncate(ad.name, 50)) + '</div>';
+    html += headlineHtml;
+    html += '<div class="exp-metrics">';
+    html += '<div class="em"><div class="em-val">' + ad.roas.toFixed(2) + '</div><div class="em-lbl">ROAS</div></div>';
+    html += '<div class="em"><div class="em-val">' + formatNIS(ad.spend) + '</div><div class="em-lbl">הוצאה</div></div>';
+    html += '<div class="em"><div class="em-val">' + formatNIS(ad.revenue) + '</div><div class="em-lbl">הכנסה</div></div>';
+    html += '<div class="em"><div class="em-val">' + ad.purchases + '</div><div class="em-lbl">המרות</div></div>';
+    html += '</div></div></div>';
   });
   document.getElementById('expandedGrid').innerHTML = html;
 }
