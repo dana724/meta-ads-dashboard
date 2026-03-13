@@ -129,6 +129,7 @@ a{color:var(--accent);text-decoration:none}
 .bottombar button.primary{background:var(--accent);color:#000;border:none;font-weight:700}
 .main-content{padding-bottom:65px}
 
+/* ===== Compact Cards Grid ===== */.grid-compact{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:0 24px 24px}.compact-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}.compact-card:hover{transform:translateY(-2px);border-color:var(--accent)}.compact-card .compact-thumb{width:100%;height:130px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--dim);overflow:hidden}.compact-card .compact-thumb img{width:100%;height:100%;object-fit:cover}.compact-card .compact-badge-roas{position:absolute;top:6px;left:6px;padding:3px 7px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}.compact-card .compact-badge-status{position:absolute;top:6px;right:6px;padding:3px 7px;border-radius:12px;font-size:9px;font-weight:700;backdrop-filter:blur(8px)}.compact-card .compact-info{padding:8px 10px}.compact-card .compact-info .compact-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}.compact-card .compact-info .compact-stats{display:grid;grid-template-columns:1fr 1fr;gap:3px}.compact-card .compact-info .compact-stats .cstat{font-size:10px;color:var(--dim)}.compact-card .compact-info .compact-stats .cstat b{color:var(--text);font-weight:600}
 /* ===== Sort ===== */
 .sort-bar{padding:0 24px 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .sort-bar label{font-size:12px;color:var(--dim)}
@@ -138,6 +139,7 @@ a{color:var(--accent);text-decoration:none}
 @media(max-width:600px){
   .metrics{grid-template-columns:1fr 1fr}
   .grid{grid-template-columns:1fr}
+  .grid-compact{grid-template-columns:1fr 1fr}
   .topbar{padding:12px 16px}
   .topbar h1{font-size:16px}
   .modal{padding:16px}
@@ -185,6 +187,7 @@ a{color:var(--accent);text-decoration:none}
   <div class="metrics" id="metricsBar"></div>
   <div class="view-toggle">
     <button class="active" id="btnCards" onclick="setView('cards')">כרטיסים</button>
+    <button id="btnCompact" onclick="setView('compact')">מוקטן</button>
     <button id="btnTable" onclick="setView('table')">טבלה</button>
   </div>
   <div class="sort-bar">
@@ -199,6 +202,7 @@ a{color:var(--accent);text-decoration:none}
     </select>
   </div>
   <div class="grid" id="cardsGrid"></div>
+  <div class="grid-compact hidden" id="compactGrid"></div>
   <div class="table-wrap hidden" id="tableWrap"></div>
   <button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח Claude AI</button>
   <div class="analysis-section hidden" id="analysisSection">
@@ -764,6 +768,7 @@ function applySort() {
   renderMetrics();
   renderCards();
   renderTable();
+  if (currentView === 'compact') renderCompactCards();
 }
 
 /* ============================================
@@ -840,6 +845,38 @@ function statCell(label, value) {
 }
 
 /* ============================================
+   9b. RENDER COMPACT CARDS
+   ============================================ */
+
+function renderCompactCards() {
+  if (adsData.length === 0) {
+    document.getElementById("compactGrid").innerHTML = '<div class="loading">אין נתונים</div>';
+    return;
+  }
+  var html = "";
+  adsData.forEach(function(ad, i) {
+    var sb = statusBadge(ad.status);
+    var cardImg = ad.visuals.cardImageUrl;
+    var thumbHtml = cardImg
+      ? '<img src="' + escAttr(cardImg) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
+      : '🖼️';
+    html += '<div class="compact-card" onclick="openModal(' + i + ')">'
+      + '<div class="compact-thumb">' + thumbHtml + '</div>'
+      + '<div class="compact-badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
+      + '<div class="compact-badge-status ' + sb.cls + '">' + sb.label + '</div>'
+      + '<div class="compact-info">'
+      + '<div class="compact-name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
+      + '<div class="compact-stats">'
+      + '<div class="cstat">CTR <b>' + ad.ctr.toFixed(2) + '%</b></div>'
+      + '<div class="cstat">Spend <b>' + formatNIS(ad.spend) + '</b></div>'
+      + '<div class="cstat">Conv <b>' + ad.purchases + '</b></div>'
+      + '<div class="cstat">Freq <b>' + ad.frequency.toFixed(2) + '</b></div>'
+      + '</div></div></div>';
+  });
+  document.getElementById("compactGrid").innerHTML = html;
+}
+
+/* ============================================
    10. RENDER TABLE
    ============================================ */
 
@@ -898,10 +935,20 @@ function renderTable() {
 function setView(view) {
   currentView = view;
   document.getElementById('btnCards').classList.toggle('active', view === 'cards');
+  document.getElementById('btnCompact').classList.toggle('active', view === 'compact');
   document.getElementById('btnTable').classList.toggle('active', view === 'table');
   document.getElementById('cardsGrid').classList.toggle('hidden', view !== 'cards');
+  document.getElementById('compactGrid').classList.toggle('hidden', view !== 'compact');
   document.getElementById('tableWrap').classList.toggle('hidden', view !== 'table');
+  if (view === 'compact') renderCompactCards();
 }
+
+
+
+
+
+
+
 
 /* ============================================
    12. MODAL WITH AD PREVIEW
@@ -972,6 +1019,7 @@ function loadAdPreview(ad) {
                   ad.thumbnail = src;
                   ad.imageSource = 'preview';
                   renderCards();
+                  if (currentView === 'compact') renderCompactCards();
                   renderTable();
                   break;
                 }
