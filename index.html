@@ -60,25 +60,59 @@ a{color:var(--accent);text-decoration:none}
 .ad-card:hover{transform:translateY(-3px);border-color:var(--accent)}
 .ad-card .thumb{width:100%;height:180px;object-fit:cover;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--dim);overflow:hidden}
 .ad-card .thumb img{width:100%;height:100%;object-fit:cover}
+.ad-card .thumb iframe{width:100%;height:100%;border:none;pointer-events:none}
 .ad-card .badge-status{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;backdrop-filter:blur(8px)}
 .ad-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}
 .ad-card .badge-carousel{position:absolute;top:42px;left:10px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.75);color:#fff;backdrop-filter:blur(8px)}
-.ad-card .badge-source{position:absolute;bottom:186px;left:10px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.5px;backdrop-filter:blur(8px)}
-.badge-source-permalink{background:rgba(0,255,157,.25);color:var(--green)}
-.badge-source-asset{background:rgba(255,255,255,.12);color:var(--dim)}
+.ad-card .badge-media{position:absolute;bottom:186px;left:10px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.5px;backdrop-filter:blur(8px);background:rgba(255,255,255,.15);color:#ccc}
 .badge-win{background:rgba(0,255,157,.2);color:var(--green)}
 .badge-ok{background:rgba(255,215,0,.2);color:var(--yellow)}
 .badge-stop{background:rgba(255,77,106,.2);color:var(--red)}
 .badge-new{background:rgba(255,255,255,.15);color:#ccc}
 .ad-card .info{padding:14px}
 .ad-card .info .name{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ad-card .info .headline{font-size:12px;color:var(--dim);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ad-card .info .adset{font-size:11px;color:var(--dim);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ad-card .info .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .ad-card .info .stats .stat{font-size:12px}
 .ad-card .info .stats .stat span{color:var(--dim)}
 .preview-toggle{position:absolute;bottom:190px;right:10px;padding:2px 8px;font-size:10px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10;transition:opacity .2s}
 .preview-toggle:hover{opacity:.85}
-.ad-card .thumb iframe{width:100%;height:100%;border:none;pointer-events:none}
+
+/* ===== Expanded Cards Grid ===== */
+.grid-expanded{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px;padding:0 24px 24px}
+.expanded-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}
+.expanded-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.expanded-card .thumb{width:100%;height:320px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:64px;color:var(--dim);overflow:hidden}
+.expanded-card .thumb img{width:100%;height:100%;object-fit:cover}
+.expanded-card .thumb iframe{width:100%;height:100%;border:none;pointer-events:none}
+.expanded-card .badge-status{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;backdrop-filter:blur(8px)}
+.expanded-card .badge-roas{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}
+.expanded-card .badge-carousel{position:absolute;top:42px;left:10px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(120,80,255,.75);color:#fff;backdrop-filter:blur(8px)}
+.expanded-card .badge-media{position:absolute;bottom:326px;left:10px;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.5px;backdrop-filter:blur(8px);background:rgba(255,255,255,.15);color:#ccc}
+.expanded-card .preview-toggle{bottom:330px;right:10px}
+.expanded-card .info{padding:16px}
+.expanded-card .info .name{font-size:16px;font-weight:700;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expanded-card .info .headline{font-size:13px;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expanded-card .info .body-text{font-size:12px;color:var(--dim);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.expanded-card .info .adset{font-size:11px;color:var(--dim);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expanded-card .info .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.expanded-card .info .stats .stat{font-size:12px}
+.expanded-card .info .stats .stat span{color:var(--dim)}
+
+/* ===== Compact Cards Grid ===== */
+.grid-compact{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:0 24px 24px}
+.compact-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}
+.compact-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.compact-card .compact-thumb{width:100%;height:130px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--dim);overflow:hidden}
+.compact-card .compact-thumb img{width:100%;height:100%;object-fit:cover}
+.compact-card .compact-badge-roas{position:absolute;top:6px;left:6px;padding:3px 7px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}
+.compact-card .compact-badge-status{position:absolute;top:6px;right:6px;padding:3px 7px;border-radius:12px;font-size:9px;font-weight:700;backdrop-filter:blur(8px)}
+.compact-card .compact-info{padding:8px 10px}
+.compact-card .compact-info .compact-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.compact-card .compact-info .compact-stats{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.compact-card .compact-info .compact-stats .cstat{font-size:10px;color:var(--dim)}
+.compact-card .compact-info .compact-stats .cstat b{color:var(--text);font-weight:600}
 
 /* ===== Table ===== */
 .table-wrap{padding:0 24px 24px;overflow-x:auto}
@@ -88,10 +122,6 @@ a{color:var(--accent);text-decoration:none}
 .table-wrap tr:hover{background:rgba(0,255,157,.03)}
 .table-wrap .thumb-cell{width:50px;height:50px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--surface);font-size:20px;position:relative}
 .table-wrap .thumb-cell img{width:100%;height:100%;object-fit:cover}
-.table-wrap .carousel-mini{position:absolute;bottom:2px;left:2px;font-size:8px;background:rgba(120,80,255,.85);color:#fff;padding:1px 4px;border-radius:4px;font-weight:700}
-.table-wrap .source-mini{position:absolute;top:2px;left:2px;font-size:7px;padding:1px 3px;border-radius:3px;font-weight:700}
-.source-mini-permalink{background:rgba(0,255,157,.3);color:var(--green)}
-.source-mini-asset{background:rgba(255,255,255,.15);color:var(--dim)}
 
 /* ===== Modal ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:900;display:none;align-items:center;justify-content:center;padding:20px}
@@ -99,7 +129,6 @@ a{color:var(--accent);text-decoration:none}
 .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:720px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;position:relative}
 .modal .close-btn{position:absolute;top:12px;left:12px;background:none;border:none;color:var(--dim);font-size:28px;cursor:pointer;z-index:10;line-height:1}
 .modal .close-btn:hover{color:var(--text)}
-.modal .modal-img{width:100%;max-height:300px;object-fit:contain;border-radius:8px;margin-bottom:16px;background:var(--surface)}
 .modal .modal-title{font-size:18px;font-weight:700;margin-bottom:4px}
 .modal .modal-sub{font-size:13px;color:var(--dim);margin-bottom:16px}
 .modal .modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
@@ -132,7 +161,6 @@ a{color:var(--accent);text-decoration:none}
 .bottombar button.primary{background:var(--accent);color:#000;border:none;font-weight:700}
 .main-content{padding-bottom:65px}
 
-/* ===== Compact Cards Grid ===== */.grid-compact{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:0 24px 24px}.compact-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}.compact-card:hover{transform:translateY(-2px);border-color:var(--accent)}.compact-card .compact-thumb{width:100%;height:130px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--dim);overflow:hidden}.compact-card .compact-thumb img{width:100%;height:100%;object-fit:cover}.compact-card .compact-badge-roas{position:absolute;top:6px;left:6px;padding:3px 7px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(0,0,0,.65);color:#fff;backdrop-filter:blur(8px)}.compact-card .compact-badge-status{position:absolute;top:6px;right:6px;padding:3px 7px;border-radius:12px;font-size:9px;font-weight:700;backdrop-filter:blur(8px)}.compact-card .compact-info{padding:8px 10px}.compact-card .compact-info .compact-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}.compact-card .compact-info .compact-stats{display:grid;grid-template-columns:1fr 1fr;gap:3px}.compact-card .compact-info .compact-stats .cstat{font-size:10px;color:var(--dim)}.compact-card .compact-info .compact-stats .cstat b{color:var(--text);font-weight:600}
 /* ===== Sort ===== */
 .sort-bar{padding:0 24px 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .sort-bar label{font-size:12px;color:var(--dim)}
@@ -142,6 +170,7 @@ a{color:var(--accent);text-decoration:none}
 @media(max-width:600px){
   .metrics{grid-template-columns:1fr 1fr}
   .grid{grid-template-columns:1fr}
+  .grid-expanded{grid-template-columns:1fr}
   .grid-compact{grid-template-columns:1fr 1fr}
   .topbar{padding:12px 16px}
   .topbar h1{font-size:16px}
@@ -190,6 +219,7 @@ a{color:var(--accent);text-decoration:none}
   <div class="metrics" id="metricsBar"></div>
   <div class="view-toggle">
     <button class="active" id="btnCards" onclick="setView('cards')">כרטיסים</button>
+    <button id="btnExpanded" onclick="setView('expanded')">מורחב</button>
     <button id="btnCompact" onclick="setView('compact')">מוקטן</button>
     <button id="btnTable" onclick="setView('table')">טבלה</button>
   </div>
@@ -205,6 +235,7 @@ a{color:var(--accent);text-decoration:none}
     </select>
   </div>
   <div class="grid" id="cardsGrid"></div>
+  <div class="grid-expanded hidden" id="expandedGrid"></div>
   <div class="grid-compact hidden" id="compactGrid"></div>
   <div class="table-wrap hidden" id="tableWrap"></div>
   <button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח Claude AI</button>
@@ -241,12 +272,9 @@ a{color:var(--accent);text-decoration:none}
   <button class="danger" onclick="doLogout()">🚪 התנתק</button>
 </div>
 
-<!-- ======================================================
-     SINGLE SCRIPT BLOCK — ALL FUNCTIONS GLOBAL
-     ====================================================== -->
 <script>
 /* ===========================================
-   META ADS DASHBOARD — FULL REWRITE
+   META ADS DASHBOARD — CLEAN REWRITE
    All functions are global (no modules).
    =========================================== */
 
@@ -270,24 +298,17 @@ function doLogin() {
   var w = document.getElementById('inputWorkerUrl').value.trim().replace(/\/+$/, '');
   if (!t) { alert('יש להזין Access Token'); return; }
   if (!a) { alert('יש להזין Ad Account ID'); return; }
-  TOKEN = t;
-  ACCOUNT_ID = a;
-  CLAUDE_KEY = c;
-  WORKER_URL = w;
+  TOKEN = t; ACCOUNT_ID = a; CLAUDE_KEY = c; WORKER_URL = w;
   sessionStorage.setItem('meta_token', t);
   sessionStorage.setItem('meta_account', a);
   if (c) sessionStorage.setItem('claude_key', c);
   if (w) sessionStorage.setItem('worker_url', w);
-  showApp();
-  fetchData();
+  showApp(); fetchData();
 }
 
 function doLogout() {
   sessionStorage.clear();
-  TOKEN = '';
-  ACCOUNT_ID = '';
-  CLAUDE_KEY = '';
-  WORKER_URL = '';
+  TOKEN = ''; ACCOUNT_ID = ''; CLAUDE_KEY = ''; WORKER_URL = '';
   adsData = [];
   document.getElementById('loginOverlay').style.display = '';
   document.getElementById('topbar').classList.add('hidden');
@@ -310,16 +331,14 @@ function restoreSession() {
   var t = sessionStorage.getItem('meta_token');
   var a = sessionStorage.getItem('meta_account');
   if (!t || !a) return;
-  TOKEN = t;
-  ACCOUNT_ID = a;
+  TOKEN = t; ACCOUNT_ID = a;
   CLAUDE_KEY = sessionStorage.getItem('claude_key') || '';
   WORKER_URL = sessionStorage.getItem('worker_url') || '';
   document.getElementById('inputToken').value = t;
   document.getElementById('inputAccount').value = a;
   if (CLAUDE_KEY) document.getElementById('inputClaudeKey').value = CLAUDE_KEY;
   if (WORKER_URL) document.getElementById('inputWorkerUrl').value = WORKER_URL;
-  showApp();
-  fetchData();
+  showApp(); fetchData();
 }
 
 /* ============================================
@@ -334,377 +353,23 @@ function syncPeriods() {
 }
 
 /* ============================================
-   3. CREATIVE ASSET NORMALIZATION
-   Extracts structured asset data from a creative
-   object. Never touches preview HTML.
-   ============================================ */
-
-function normalizeCreativeAssets(creative) {
-  var result = {
-    creativeType: 'unknown',  /* image | video | carousel | unknown */
-    carouselCount: 0,
-    imageUrl: creative.image_url || '',
-    thumbnailUrl: creative.thumbnail_url || '',
-    videoThumbnailUrl: '',
-    carouselFirstImage: '',
-    objectType: creative.object_type || '',
-    imageHash: extractImageHash(creative)
-  };
-
-  var spec = creative.object_story_spec || null;
-
-  /* --- Carousel detection --- */
-  if (spec) {
-    var linkData = spec.link_data || null;
-    if (linkData && linkData.child_attachments && linkData.child_attachments.length > 0) {
-      var kids = linkData.child_attachments;
-      result.creativeType = 'carousel';
-      result.carouselCount = kids.length;
-      /* First valid child image */
-      for (var i = 0; i < kids.length; i++) {
-        var childImg = kids[i].picture || kids[i].image_url || '';
-        if (childImg) { result.carouselFirstImage = childImg; break; }
-      }
-      return result;
-    }
-
-    /* --- Video detection via object_story_spec --- */
-    if (spec.video_data) {
-      result.creativeType = 'video';
-      result.videoThumbnailUrl = spec.video_data.image_url || '';
-      return result;
-    }
-  }
-
-  /* --- Video detection via object_type --- */
-  if (result.objectType === 'VIDEO' || result.objectType === 'SHARE' && creative.video_id) {
-    result.creativeType = 'video';
-    /* thumbnail_url is already captured; it's the video poster frame */
-    result.videoThumbnailUrl = result.thumbnailUrl;
-    return result;
-  }
-
-  /* --- Image ad (default) --- */
-  if (result.imageUrl || result.thumbnailUrl || result.imageHash) {
-    result.creativeType = 'image';
-  }
-
-  return result;
-}
-
-/* ============================================
-   3b. RESOLVE CARD IMAGE (pure function)
-   Picks the best card thumbnail from asset data
-   only. Never inspects previewHtml.
-   ============================================ */
-
-function resolveCardImage(ad) {
-  /*
-   * Strict Fallback Chain — reads ONLY from ad.visuals.
-   * Never inspects preview HTML.
-   *
-   * IMAGE:    permalink → image_url → thumbnail_url → null
-   * VIDEO:    videoThumbnailUrl → thumbnail_url → null
-   * CAROUSEL: permalink → carouselFirstImage → image_url → thumbnail_url → null
-   *
-   * Returns: { url: string, source: string }
-   */
-  var v = ad.visuals;
-  var permalink = v.permalinkUrl || '';
-  var imageUrl  = v.imageUrl || '';
-  var thumbUrl  = v.thumbnailUrl || '';
-
-  if (ad.creativeType === 'video') {
-    /* Videos: poster frame first, then generic thumbnail */
-    var vidThumb = v.videoThumbnailUrl || '';
-    if (vidThumb)  return { url: vidThumb,  source: 'asset' };
-    if (thumbUrl)  return { url: thumbUrl,  source: 'asset' };
-    return { url: '', source: 'none' };
-  }
-
-  if (ad.creativeType === 'carousel') {
-    /* Carousels: permalink (if hash exists) → first child → fallbacks */
-    var carImg = v.carouselFirstImage || '';
-    if (permalink) return { url: permalink, source: 'permalink' };
-    if (carImg)    return { url: carImg,    source: 'asset' };
-    if (imageUrl)  return { url: imageUrl,  source: 'asset' };
-    if (thumbUrl)  return { url: thumbUrl,  source: 'asset' };
-    return { url: '', source: 'none' };
-  }
-
-  /* Image ad (or unknown): permalink first, then creative URLs */
-  if (permalink) return { url: permalink, source: 'permalink' };
-  if (imageUrl)  return { url: imageUrl,  source: 'asset' };
-  if (thumbUrl)  return { url: thumbUrl,  source: 'asset' };
-  return { url: '', source: 'none' };
-}
-
-/* ============================================
-   3b. EXTRACT IMAGE HASH FROM CREATIVE
-   ============================================ */
-
-function extractImageHash(creative) {
-  if (!creative) return '';
-  if (creative.image_hash) return creative.image_hash;
-  var spec = creative.object_story_spec || {};
-  if (spec.link_data && spec.link_data.image_hash) return spec.link_data.image_hash;
-  if (spec.photo_data && spec.photo_data.image_hash) return spec.photo_data.image_hash;
-  if (spec.video_data && spec.video_data.image_hash) return spec.video_data.image_hash;
-  if (spec.link_data && spec.link_data.child_attachments) {
-    for (var i = 0; i < spec.link_data.child_attachments.length; i++) {
-      if (spec.link_data.child_attachments[i].image_hash) {
-        return spec.link_data.child_attachments[i].image_hash;
-      }
-    }
-  }
-  return '';
-}
-
-/* ============================================
-   4. FETCH DATA — Main data pipeline
-   ============================================ */
-
-function fetchData() {
-  if (!TOKEN || !ACCOUNT_ID) return;
-
-  var period = document.getElementById('periodSelect').value;
-  var url = META_API + '/act_' + ACCOUNT_ID + '/insights'
-    + '?fields=ad_id,ad_name,adset_name,campaign_name,impressions,clicks,spend,reach,frequency,ctr,cpc,actions,action_values'
-    + '&level=ad&date_preset=' + period
-    + '&limit=200&access_token=' + TOKEN;
-
-  /* Show loading */
-  document.getElementById('cardsGrid').innerHTML = '<div class="loading"><span class="spinner"></span> טוען נתונים מ-Meta...</div>';
-  document.getElementById('tableWrap').innerHTML = '';
-  document.getElementById('metricsBar').innerHTML = '';
-  document.getElementById('analysisSection').classList.add('hidden');
-
-  fetchAllPages(url, [])
-    .then(function(allData) {
-      if (allData.length === 0) {
-        document.getElementById('cardsGrid').innerHTML = '<div class="loading">אין נתונים לתקופה הנבחרת</div>';
-        return;
-      }
-      adsData = allData.map(parseAd);
-      return fetchCreativeImages();
-    })
-    .then(function() {
-      /* Resolve stable permalink_url via image_hash + /adimages endpoint */
-      if (adsData.length > 0) return fetchPermalinkImages();
-    })
-    .then(function() {
-      if (adsData.length > 0) {
-        /* Pick best card image from asset data (never from preview HTML) */
-        resolveAllCardImages();
-        applySort();
-      }
-    })
-    .catch(function(err) {
-      document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאה: ' + esc(err.message || String(err)) + '</div>';
-    });
-}
-
-/* Fetch all pages of paginated results */
-function fetchAllPages(url, accumulated) {
-  return fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(json) {
-      if (json.error) throw new Error(json.error.message || 'Meta API error');
-      var data = json.data || [];
-      var all = accumulated.concat(data);
-      if (json.paging && json.paging.next) {
-        return fetchAllPages(json.paging.next, all);
-      }
-      return all;
-    });
-}
-
-/* ============================================
-   5. FETCH CREATIVE IMAGES (batch)
-   ============================================ */
-
-function fetchCreativeImages() {
-  var adIds = adsData.map(function(a) { return a.id; }).filter(Boolean);
-  if (adIds.length === 0) return Promise.resolve();
-
-  /* Step 1: get creative IDs for all ads */
-  var filterParam = encodeURIComponent('[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]');
-  var adsUrl = META_API + '/act_' + ACCOUNT_ID + '/ads'
-    + '?fields=id,creative{id}&filtering=' + filterParam
-    + '&limit=200&access_token=' + TOKEN;
-
-  return fetch(adsUrl)
-    .then(function(r) { return r.json(); })
-    .then(function(json) {
-      if (!json.data) return;
-      /* Map creative IDs back to adsData */
-      var creativeMap = {};
-      json.data.forEach(function(obj) {
-        if (obj.creative && obj.creative.id) {
-          creativeMap[obj.id] = obj.creative.id;
-        }
-      });
-      adsData.forEach(function(ad) {
-        if (creativeMap[ad.id]) ad.creativeId = creativeMap[ad.id];
-      });
-
-      /* Step 2: fetch creative details */
-      var promises = adsData.map(function(ad) {
-        if (!ad.creativeId) return Promise.resolve();
-        var cUrl = META_API + '/' + ad.creativeId
-          + '?fields=thumbnail_url,image_url,image_hash,object_story_spec,object_type,video_id'
-          + '&thumbnail_width=600&thumbnail_height=600'
-          + '&access_token=' + TOKEN;
-        return fetch(cUrl)
-          .then(function(r) { return r.json(); })
-          .then(function(creative) {
-            /* === DEBUG: Visual Truth Alignment === */
-            var spec = creative.object_story_spec || {};
-            var ld = spec.link_data || null;
-            var vd = spec.video_data || null;
-            console.group('🔍 Creative Debug: ' + ad.name + ' (ad ' + ad.id + ')');
-            console.log('Full creative JSON:', JSON.parse(JSON.stringify(creative)));
-            console.log('Top-level image_url:', creative.image_url || '(none)');
-            console.log('Top-level image_hash:', creative.image_hash || '(none)');
-            console.log('Top-level thumbnail_url:', creative.thumbnail_url || '(none)');
-            console.log('object_type:', creative.object_type || '(none)');
-            if (ld) {
-              console.log('--- link_data ---');
-              console.log('  link_data.picture:', ld.picture || '(none)');
-              console.log('  link_data.image_hash:', ld.image_hash || '(none)');
-              console.log('  link_data.image_url:', ld.image_url || '(none)');
-              if (ld.child_attachments) {
-                console.log('  link_data.child_attachments:', ld.child_attachments.length, 'items');
-                ld.child_attachments.forEach(function(c, i) {
-                  console.log('    child[' + i + '] picture:', c.picture || '(none)', 'hash:', c.image_hash || '(none)');
-                });
-              }
-            }
-            if (vd) {
-              console.log('--- video_data ---');
-              console.log('  video_data.image_url:', vd.image_url || '(none)');
-              console.log('  video_data.image_hash:', vd.image_hash || '(none)');
-              console.log('  video_data.video_id:', vd.video_id || '(none)');
-            }
-            if (spec.photo_data) {
-              console.log('--- photo_data ---');
-              console.log('  photo_data.image_hash:', spec.photo_data.image_hash || '(none)');
-            }
-            if (spec.template_data) {
-              console.log('--- template_data (dynamic) ---');
-              console.log('  template_data:', JSON.parse(JSON.stringify(spec.template_data)));
-            }
-            console.groupEnd();
-            /* === END DEBUG === */
-
-            var assets = normalizeCreativeAssets(creative);
-            ad.creativeType  = assets.creativeType;
-            ad.carouselCount = assets.carouselCount;
-            ad.objectType    = assets.objectType;
-            /* Write into visuals sub-object — pure asset data */
-            ad.visuals.imageHash         = assets.imageHash;
-            ad.visuals.imageUrl          = assets.imageUrl;
-            ad.visuals.thumbnailUrl      = assets.thumbnailUrl;
-            ad.visuals.videoThumbnailUrl = assets.videoThumbnailUrl;
-            ad.visuals.carouselFirstImage = assets.carouselFirstImage;
-
-            /* DEBUG: Log what resolveCardImage will pick */
-            var wouldPick = resolveCardImage(ad);
-            console.log('📸 Card would show:', wouldPick.source, '→', wouldPick.url ? wouldPick.url.substring(0, 80) + '...' : '(empty)');
-          })
-          .catch(function() {
-            ad.creativeType = 'unknown';
-          });
-      });
-      return Promise.all(promises);
-    })
-    .catch(function() { /* skip image errors silently */ });
-}
-
-/* ============================================
-   5a2. FETCH PERMALINK URLs via adimages endpoint
-   Only stores permalinkUrl on each ad.
-   Does NOT resolve final card image (that's
-   resolveCardImage's job).
-   ============================================ */
-
-function fetchPermalinkImages() {
-  var hashes = [];
-  adsData.forEach(function(ad) {
-    var h = ad.visuals.imageHash;
-    if (h && hashes.indexOf(h) === -1) {
-      hashes.push(h);
-    }
-  });
-
-  if (!hashes.length) return Promise.resolve();
-
-  var url = META_API + '/act_' + ACCOUNT_ID + '/adimages'
-    + '?hashes=' + encodeURIComponent(JSON.stringify(hashes))
-    + '&fields=hash,permalink_url'
-    + '&access_token=' + TOKEN;
-
-  return fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(json) {
-      if (!json.data) return;
-      var permalinkMap = {};
-      json.data.forEach(function(img) {
-        if (img.hash && img.permalink_url) {
-          permalinkMap[img.hash] = img.permalink_url;
-        }
-      });
-      adsData.forEach(function(ad) {
-        var h = ad.visuals.imageHash;
-        if (h && permalinkMap[h]) {
-          ad.visuals.permalinkUrl = permalinkMap[h];
-        }
-      });
-    })
-    .catch(function() { /* skip permalink errors silently */ });
-}
-
-/* ============================================
-   5a3. RESOLVE ALL CARD IMAGES
-   Runs resolveCardImage() on each ad after all
-   asset data and permalinks are available.
-   ============================================ */
-
-function resolveAllCardImages() {
-  console.group('🎯 Final Card Image Resolution (after permalink fetch)');
-  adsData.forEach(function(ad) {
-    var resolved = resolveCardImage(ad);
-    ad.visuals.cardImageUrl    = resolved.url;
-    ad.visuals.cardImageSource = resolved.source;
-    console.log(ad.name, '| type:', ad.creativeType, '| source:', resolved.source,
-      '| hash:', ad.visuals.imageHash || '(none)',
-      '| permalink:', ad.visuals.permalinkUrl ? 'YES' : 'NO',
-      '| url:', resolved.url ? resolved.url.substring(0, 60) + '...' : '(empty)');
-  });
-  console.groupEnd();
-}
-
-/* ============================================
-   5b. PARSE AD DATA
+   3. PARSE AD DATA — Simple flat model
    ============================================ */
 
 function parseAd(raw) {
   var spend = parseFloat(raw.spend) || 0;
-  var purchases = 0;
-  var revenue = 0;
+  var purchases = 0, revenue = 0;
 
   if (raw.actions) {
     raw.actions.forEach(function(a) {
-      if (a.action_type === 'purchase' || a.action_type === 'offsite_conversion.fb_pixel_purchase') {
+      if (a.action_type === 'purchase' || a.action_type === 'offsite_conversion.fb_pixel_purchase')
         purchases += parseInt(a.value) || 0;
-      }
     });
   }
   if (raw.action_values) {
     raw.action_values.forEach(function(a) {
-      if (a.action_type === 'purchase' || a.action_type === 'offsite_conversion.fb_pixel_purchase') {
+      if (a.action_type === 'purchase' || a.action_type === 'offsite_conversion.fb_pixel_purchase')
         revenue += parseFloat(a.value) || 0;
-      }
     });
   }
 
@@ -733,34 +398,154 @@ function parseAd(raw) {
     roas: roas,
     status: status,
     creativeId: '',
-    creativeType: 'unknown',     /* image | video | carousel | unknown */
+    creativeType: 'unknown',
     carouselCount: 0,
-    objectType: '',
-    /* --- visuals: strict separation of asset vs preview --- */
-    visuals: {
-      /* Asset-derived fields (from creative API, never from preview HTML) */
-      imageHash: '',             /* for permalink resolution */
-      imageUrl: '',              /* creative.image_url */
-      thumbnailUrl: '',          /* creative.thumbnail_url */
-      videoThumbnailUrl: '',     /* video poster from object_story_spec */
-      carouselFirstImage: '',    /* first child_attachment image */
-      permalinkUrl: '',          /* stable URL from /adimages (never expires) */
-      /* Resolved card thumbnail (pure asset, never preview) */
-      cardImageUrl: '',          /* best asset image, set by resolveCardImage() */
-      cardImageSource: 'none'   /* permalink | asset | none */
-    }
+    thumbnail: '',
+    headline: '',
+    bodyText: '',
+    mediaLabel: 'Creative',
+    previewBody: '',
+    previewLoaded: false,
+    previewState: 'asset'
   };
 }
 
 /* ============================================
-   7. SORT
+   4. FETCH DATA — Clean 2-step pipeline
+   ============================================ */
+
+function fetchData() {
+  if (!TOKEN || !ACCOUNT_ID) return;
+
+  var period = document.getElementById('periodSelect').value;
+  var url = META_API + '/act_' + ACCOUNT_ID + '/insights'
+    + '?fields=ad_id,ad_name,adset_name,campaign_name,impressions,clicks,spend,reach,frequency,ctr,cpc,actions,action_values'
+    + '&level=ad&date_preset=' + period
+    + '&limit=200&access_token=' + TOKEN;
+
+  document.getElementById('cardsGrid').innerHTML = '<div class="loading"><span class="spinner"></span> טוען נתונים מ-Meta...</div>';
+  document.getElementById('expandedGrid').innerHTML = '';
+  document.getElementById('compactGrid').innerHTML = '';
+  document.getElementById('tableWrap').innerHTML = '';
+  document.getElementById('metricsBar').innerHTML = '';
+  document.getElementById('analysisSection').classList.add('hidden');
+
+  fetchAllPages(url, [])
+    .then(function(allData) {
+      if (allData.length === 0) {
+        document.getElementById('cardsGrid').innerHTML = '<div class="loading">אין נתונים לתקופה הנבחרת</div>';
+        return;
+      }
+      adsData = allData.map(parseAd);
+      return fetchCreativeAssets();
+    })
+    .then(function() {
+      if (adsData.length > 0) applySort();
+    })
+    .catch(function(err) {
+      document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאה: ' + esc(err.message || String(err)) + '</div>';
+    });
+}
+
+function fetchAllPages(url, accumulated) {
+  return fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (json.error) throw new Error(json.error.message || 'Meta API error');
+      var data = json.data || [];
+      var all = accumulated.concat(data);
+      if (json.paging && json.paging.next) return fetchAllPages(json.paging.next, all);
+      return all;
+    });
+}
+
+/* ============================================
+   5. FETCH CREATIVE ASSETS — Single clean function
+   Replaces: normalizeCreativeAssets, resolveCardImage,
+   extractImageHash, fetchPermalinkImages, resolveAllCardImages
+   ============================================ */
+
+function fetchCreativeAssets() {
+  var adIds = adsData.map(function(a) { return a.id; }).filter(Boolean);
+  if (adIds.length === 0) return Promise.resolve();
+
+  var filterParam = encodeURIComponent('[{"field":"id","operator":"IN","value":' + JSON.stringify(adIds) + '}]');
+  var adsUrl = META_API + '/act_' + ACCOUNT_ID + '/ads'
+    + '?fields=id,creative{id}&filtering=' + filterParam
+    + '&limit=200&access_token=' + TOKEN;
+
+  return fetch(adsUrl)
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (!json.data) return;
+      var creativeMap = {};
+      json.data.forEach(function(obj) {
+        if (obj.creative && obj.creative.id) creativeMap[obj.id] = obj.creative.id;
+      });
+      adsData.forEach(function(ad) {
+        if (creativeMap[ad.id]) ad.creativeId = creativeMap[ad.id];
+      });
+
+      var promises = adsData.map(function(ad) {
+        if (!ad.creativeId) return Promise.resolve();
+        var cUrl = META_API + '/' + ad.creativeId
+          + '?fields=thumbnail_url,image_url,object_story_spec,object_type,video_id'
+          + '&thumbnail_width=600&thumbnail_height=600'
+          + '&access_token=' + TOKEN;
+
+        return fetch(cUrl)
+          .then(function(r) { return r.json(); })
+          .then(function(c) {
+            var spec = c.object_story_spec || {};
+            var ld = spec.link_data || null;
+            var vd = spec.video_data || null;
+
+            /* --- Detect type and pick thumbnail --- */
+            if (ld && ld.child_attachments && ld.child_attachments.length > 0) {
+              ad.creativeType = 'carousel';
+              ad.carouselCount = ld.child_attachments.length;
+              ad.mediaLabel = 'Carousel';
+              for (var i = 0; i < ld.child_attachments.length; i++) {
+                var childImg = ld.child_attachments[i].picture || ld.child_attachments[i].image_url || '';
+                if (childImg) { ad.thumbnail = childImg; break; }
+              }
+              if (!ad.thumbnail) ad.thumbnail = c.thumbnail_url || '';
+            } else if (vd || c.object_type === 'VIDEO' || (c.object_type === 'SHARE' && c.video_id)) {
+              ad.creativeType = 'video';
+              ad.mediaLabel = 'Video';
+              ad.thumbnail = (vd && vd.image_url) ? vd.image_url : (c.thumbnail_url || '');
+            } else {
+              ad.creativeType = 'image';
+              ad.mediaLabel = 'Image';
+              ad.thumbnail = c.image_url || c.thumbnail_url || '';
+              if (!ad.thumbnail && ld && ld.picture) ad.thumbnail = ld.picture;
+              if (!ad.thumbnail && spec.photo_data && spec.photo_data.url) ad.thumbnail = spec.photo_data.url;
+            }
+
+            /* --- Headline --- */
+            if (ld && ld.name) ad.headline = ld.name;
+            else if (vd && vd.title) ad.headline = vd.title;
+
+            /* --- Body text --- */
+            if (ld && ld.message) ad.bodyText = ld.message;
+            else if (vd && vd.message) ad.bodyText = vd.message;
+          })
+          .catch(function() { /* skip individual creative errors */ });
+      });
+      return Promise.all(promises);
+    })
+    .catch(function() { /* skip batch errors */ });
+}
+
+/* ============================================
+   6. SORT
    ============================================ */
 
 function applySort() {
   var val = document.getElementById('sortSelect').value;
   var parts = val.split('_');
   var field = parts[0];
-  var dir = parts[parts.length - 1]; /* 'asc' or 'desc' */
+  var dir = parts[parts.length - 1];
 
   adsData.sort(function(a, b) {
     var va = a[field] || 0;
@@ -770,20 +555,19 @@ function applySort() {
 
   renderMetrics();
   renderCards();
-  renderTable();
+  if (currentView === 'expanded') renderExpandedCards();
   if (currentView === 'compact') renderCompactCards();
+  renderTable();
 }
 
 /* ============================================
-   8. RENDER METRICS
+   7. RENDER METRICS
    ============================================ */
 
 function renderMetrics() {
   var totalSpend = 0, totalRevenue = 0, totalPurchases = 0;
   adsData.forEach(function(ad) {
-    totalSpend += ad.spend;
-    totalRevenue += ad.revenue;
-    totalPurchases += ad.purchases;
+    totalSpend += ad.spend; totalRevenue += ad.revenue; totalPurchases += ad.purchases;
   });
   var totalRoas = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : '0';
   document.getElementById('metricsBar').innerHTML =
@@ -799,7 +583,7 @@ function metricBox(label, value) {
 }
 
 /* ============================================
-   9. RENDER CARDS
+   8. RENDER CARDS (default view)
    ============================================ */
 
 function renderCards() {
@@ -810,29 +594,24 @@ function renderCards() {
   var html = '';
   adsData.forEach(function(ad, i) {
     var sb = statusBadge(ad.status);
-    var cardImg = ad.visuals.cardImageUrl;
-    var thumbHtml = cardImg
-      ? '<img src="' + escAttr(cardImg) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
-      : '🖼️';
-    var carouselBadge = '';
-    if (ad.creativeType === 'carousel' && ad.carouselCount > 0) {
-      carouselBadge = '<div class="badge-carousel">🎠 x' + ad.carouselCount + '</div>';
-    }
-    var sourceBadge = '';
-    if (ad.visuals.cardImageSource === 'permalink') {
-      sourceBadge = '<div class="badge-source badge-source-permalink">PERMALINK</div>';
-    } else if (ad.visuals.cardImageSource === 'asset') {
-      sourceBadge = '<div class="badge-source badge-source-asset">ASSET</div>';
-    }
+    var thumbHtml = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      : '&#128444;&#65039;';
+    var carouselBadge = (ad.creativeType === 'carousel' && ad.carouselCount > 0)
+      ? '<div class="badge-carousel">&#127904; x' + ad.carouselCount + '</div>' : '';
+    var headlineHtml = ad.headline
+      ? '<div class="headline" title="' + escAttr(ad.headline) + '">' + esc(truncate(ad.headline, 50)) + '</div>' : '';
+
     html += '<div class="ad-card" onclick="openModal(' + i + ')">'
       + '<div class="thumb" id="thumb-' + i + '">' + thumbHtml + '</div>'
-      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ')">&#128065; Preview</button>'
+      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ',\'thumb-' + i + '\')">&#128065; Preview</button>'
       + '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>'
       + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
+      + '<div class="badge-media">' + esc(ad.mediaLabel) + '</div>'
       + carouselBadge
-      + sourceBadge
       + '<div class="info">'
       + '<div class="name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
+      + headlineHtml
       + '<div class="adset" title="' + escAttr(ad.adset) + '">' + esc(ad.adset) + '</div>'
       + '<div class="stats">'
       + statCell('הוצאה', formatNIS(ad.spend))
@@ -849,21 +628,66 @@ function statCell(label, value) {
 }
 
 /* ============================================
-   9b. RENDER COMPACT CARDS
+   9. RENDER EXPANDED CARDS (large creative view)
+   ============================================ */
+
+function renderExpandedCards() {
+  if (adsData.length === 0) {
+    document.getElementById('expandedGrid').innerHTML = '<div class="loading">אין נתונים</div>';
+    return;
+  }
+  var html = '';
+  adsData.forEach(function(ad, i) {
+    var sb = statusBadge(ad.status);
+    var thumbHtml = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      : '&#128444;&#65039;';
+    var carouselBadge = (ad.creativeType === 'carousel' && ad.carouselCount > 0)
+      ? '<div class="badge-carousel">&#127904; x' + ad.carouselCount + '</div>' : '';
+    var headlineHtml = ad.headline
+      ? '<div class="headline" title="' + escAttr(ad.headline) + '">' + esc(truncate(ad.headline, 80)) + '</div>' : '';
+    var bodyHtml = ad.bodyText
+      ? '<div class="body-text">' + esc(truncate(ad.bodyText, 120)) + '</div>' : '';
+
+    html += '<div class="expanded-card" onclick="openModal(' + i + ')">'
+      + '<div class="thumb" id="exp-thumb-' + i + '">' + thumbHtml + '</div>'
+      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ',\'exp-thumb-' + i + '\')">&#128065; Preview</button>'
+      + '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>'
+      + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
+      + '<div class="badge-media">' + esc(ad.mediaLabel) + '</div>'
+      + carouselBadge
+      + '<div class="info">'
+      + '<div class="name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
+      + headlineHtml
+      + bodyHtml
+      + '<div class="adset" title="' + escAttr(ad.adset) + '">' + esc(ad.adset) + '</div>'
+      + '<div class="stats">'
+      + statCell('הוצאה', formatNIS(ad.spend))
+      + statCell('הכנסה', formatNIS(ad.revenue))
+      + statCell('ROAS', ad.roas.toFixed(2))
+      + statCell('CTR', ad.ctr.toFixed(2) + '%')
+      + statCell('המרות', String(ad.purchases))
+      + statCell('Freq', ad.frequency.toFixed(2))
+      + '</div></div></div>';
+  });
+  document.getElementById('expandedGrid').innerHTML = html;
+}
+
+/* ============================================
+   10. RENDER COMPACT CARDS
    ============================================ */
 
 function renderCompactCards() {
   if (adsData.length === 0) {
-    document.getElementById("compactGrid").innerHTML = '<div class="loading">אין נתונים</div>';
+    document.getElementById('compactGrid').innerHTML = '<div class="loading">אין נתונים</div>';
     return;
   }
-  var html = "";
+  var html = '';
   adsData.forEach(function(ad, i) {
     var sb = statusBadge(ad.status);
-    var cardImg = ad.visuals.cardImageUrl;
-    var thumbHtml = cardImg
-      ? '<img src="' + escAttr(cardImg) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
-      : '🖼️';
+    var thumbHtml = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      : '&#128444;&#65039;';
     html += '<div class="compact-card" onclick="openModal(' + i + ')">'
       + '<div class="compact-thumb">' + thumbHtml + '</div>'
       + '<div class="compact-badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
@@ -877,49 +701,11 @@ function renderCompactCards() {
       + '<div class="cstat">Freq <b>' + ad.frequency.toFixed(2) + '</b></div>'
       + '</div></div></div>';
   });
-  document.getElementById("compactGrid").innerHTML = html;
-}
-
-
-/* ============================================
-   9c. TOGGLE PREVIEW ON CARD
-   ============================================ */
-
-function togglePreview(event, index) {
-  event.stopPropagation();
-  var ad = adsData[index];
-  var thumb = document.getElementById('thumb-' + index);
-  var btn = event.target;
-
-  if (thumb.dataset.mode === 'preview') {
-    var cardImg = ad.visuals.cardImageUrl;
-    thumb.innerHTML = cardImg
-      ? '<img src="' + escAttr(cardImg) + '" alt="" loading="lazy">'
-      : '&#128444;';
-    thumb.dataset.mode = 'asset';
-    btn.innerHTML = '&#128065; Preview';
-  } else {
-    thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim)"><span class="spinner"></span></div>';
-    var url = META_API + '/' + ad.id + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
-    fetch(url)
-      .then(function(r) { return r.json(); })
-      .then(function(json) {
-        if (json.data && json.data[0] && json.data[0].body) {
-          thumb.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(json.data[0].body) + '" style="width:100%;height:100%;border:none;pointer-events:none"></iframe>';
-          thumb.dataset.mode = 'preview';
-          btn.innerHTML = '&#128444; Asset';
-        } else {
-          thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim);font-size:12px">not available</div>';
-        }
-      })
-      .catch(function() {
-        thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:12px">error</div>';
-      });
-  }
+  document.getElementById('compactGrid').innerHTML = html;
 }
 
 /* ============================================
-   10. RENDER TABLE
+   11. RENDER TABLE
    ============================================ */
 
 function renderTable() {
@@ -931,29 +717,14 @@ function renderTable() {
 
   adsData.forEach(function(ad, i) {
     var sb = statusBadge(ad.status);
-    var cardImg = ad.visuals.cardImageUrl;
-    var thumbHtml = cardImg
-      ? '<img src="' + escAttr(cardImg) + '" alt="" loading="lazy" onerror="this.parentNode.innerHTML=\'🖼️\'">'
-      : '🖼️';
-    var miniCarousel = '';
-    if (ad.creativeType === 'carousel' && ad.carouselCount > 0) {
-      miniCarousel = '<span class="carousel-mini">🎠' + ad.carouselCount + '</span>';
-    }
-    var miniSource = '';
-    if (ad.visuals.cardImageSource === 'permalink') {
-      miniSource = '<span class="source-mini source-mini-permalink">PL</span>';
-    } else if (ad.visuals.cardImageSource === 'asset') {
-      miniSource = '<span class="source-mini source-mini-asset">AS</span>';
-    }
-    var typeLabel = '-';
-    if (ad.creativeType === 'carousel') typeLabel = '🎠 קרוסלה';
-    else if (ad.creativeType === 'video') typeLabel = '🎬 וידאו';
-    else if (ad.creativeType === 'image') typeLabel = '🖼 תמונה';
+    var thumbHtml = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      : '&#128444;&#65039;';
 
     html += '<tr onclick="openModal(' + i + ')" style="cursor:pointer">'
-      + '<td><div class="thumb-cell">' + thumbHtml + miniCarousel + miniSource + '</div></td>'
+      + '<td><div class="thumb-cell">' + thumbHtml + '</div></td>'
       + '<td title="' + escAttr(ad.name) + '">' + esc(truncate(ad.name, 40)) + '</td>'
-      + '<td>' + typeLabel + '</td>'
+      + '<td>' + esc(ad.mediaLabel) + '</td>'
       + '<td>' + esc(truncate(ad.adset, 30)) + '</td>'
       + '<td>' + formatNIS(ad.spend) + '</td>'
       + '<td>' + formatNIS(ad.revenue) + '</td>'
@@ -971,40 +742,89 @@ function renderTable() {
 }
 
 /* ============================================
-   11. VIEW TOGGLE
+   12. VIEW TOGGLE
    ============================================ */
 
 function setView(view) {
   currentView = view;
   document.getElementById('btnCards').classList.toggle('active', view === 'cards');
+  document.getElementById('btnExpanded').classList.toggle('active', view === 'expanded');
   document.getElementById('btnCompact').classList.toggle('active', view === 'compact');
   document.getElementById('btnTable').classList.toggle('active', view === 'table');
   document.getElementById('cardsGrid').classList.toggle('hidden', view !== 'cards');
+  document.getElementById('expandedGrid').classList.toggle('hidden', view !== 'expanded');
   document.getElementById('compactGrid').classList.toggle('hidden', view !== 'compact');
   document.getElementById('tableWrap').classList.toggle('hidden', view !== 'table');
+  if (view === 'expanded') renderExpandedCards();
   if (view === 'compact') renderCompactCards();
 }
 
+/* ============================================
+   13. PREVIEW TOGGLE ON CARDS
+   No contentDocument. No image extraction.
+   iframe = black box with srcdoc.
+   ============================================ */
 
+function togglePreview(event, index, thumbId) {
+  event.stopPropagation();
+  var ad = adsData[index];
+  var thumb = document.getElementById(thumbId);
+  var btn = event.currentTarget;
 
+  if (ad.previewState === 'preview') {
+    /* Switch back to asset */
+    thumb.innerHTML = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy">'
+      : '&#128444;&#65039;';
+    ad.previewState = 'asset';
+    btn.innerHTML = '&#128065; Preview';
+    return;
+  }
 
+  /* Show preview — use cache if available */
+  if (ad.previewBody) {
+    showPreviewInThumb(thumb, ad, btn);
+    return;
+  }
 
+  /* Fetch preview from Meta API */
+  thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim)"><span class="spinner"></span></div>';
+  var url = META_API + '/' + ad.id + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (json.data && json.data[0] && json.data[0].body) {
+        ad.previewBody = json.data[0].body;
+        ad.previewLoaded = true;
+        showPreviewInThumb(thumb, ad, btn);
+      } else {
+        thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim);font-size:12px">Preview לא זמין</div>';
+      }
+    })
+    .catch(function() {
+      thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--red);font-size:12px">שגיאה בטעינה</div>';
+    });
+}
 
-
+function showPreviewInThumb(thumb, ad, btn) {
+  thumb.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '" style="width:100%;height:100%;border:none;pointer-events:none"></iframe>';
+  ad.previewState = 'preview';
+  btn.innerHTML = '&#128444;&#65039; Asset';
+}
 
 /* ============================================
-   12. MODAL WITH AD PREVIEW
+   14. MODAL WITH AD PREVIEW
+   No iframe.onload handler. No image extraction.
+   Preview = black box iframe.
    ============================================ */
 
 function openModal(index) {
   var ad = adsData[index];
   if (!ad) return;
 
-  /* Modal shows Meta preview only — no asset thumbnail duplication */
-
   var typeTag = '';
   if (ad.creativeType === 'carousel') {
-    typeTag = ' <span style="font-size:12px;color:var(--purple)">(🎠 קרוסלה — ' + ad.carouselCount + ' כרטיסים)</span>';
+    typeTag = ' <span style="font-size:12px;color:var(--purple)">(&#127904; ' + ad.mediaLabel + ' — ' + ad.carouselCount + ' כרטיסים)</span>';
   }
 
   var html = '<div class="modal-title">' + esc(ad.name) + typeTag + '</div>'
@@ -1032,10 +852,13 @@ function openModal(index) {
 }
 
 function loadAdPreview(ad) {
-  /* Preview is fetched on-demand for modal only — never used for card images */
-  var url = META_API + '/' + ad.id
-    + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
+  if (ad.previewBody) {
+    var wrap = document.getElementById('adPreviewWrap');
+    if (wrap) wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>';
+    return;
+  }
 
+  var url = META_API + '/' + ad.id + '/previews?ad_format=DESKTOP_FEED_STANDARD&access_token=' + TOKEN;
   fetch(url)
     .then(function(r) { return r.json(); })
     .then(function(json) {
@@ -1045,31 +868,9 @@ function loadAdPreview(ad) {
         wrap.innerHTML = '<div class="pv-msg" style="font-size:12px">לא ניתן לטעון תצוגה מקדימה</div>';
         return;
       }
-      var body = json.data[0].body;
-      wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(body) + '"></iframe>';
-      var iframe = wrap.querySelector('iframe');
-      if (iframe) {
-        iframe.onload = function() {
-          try {
-            var iDoc = iframe.contentDocument || iframe.contentWindow.document;
-            var imgs = iDoc.querySelectorAll('img');
-            for (var i = 0; i < imgs.length; i++) {
-              var img = imgs[i];
-              if (img.naturalWidth > 100 && img.naturalHeight > 100) {
-                var src = img.src;
-                if (src && src.indexOf('data:') !== 0 && src.indexOf('/rsrc.php') === -1) {
-                  ad.visuals.cardImageUrl = src;
-                  ad.visuals.cardImageSource = 'preview';
-                  renderCards();
-                  if (currentView === 'compact') renderCompactCards();
-                  renderTable();
-                  break;
-                }
-              }
-            }
-          } catch(e) {}
-        };
-      }
+      ad.previewBody = json.data[0].body;
+      ad.previewLoaded = true;
+      wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>';
     })
     .catch(function() {
       var wrap = document.getElementById('adPreviewWrap');
@@ -1088,7 +889,7 @@ function msStat(label, value) {
 }
 
 /* ============================================
-   13. CLAUDE AI ANALYSIS
+   15. CLAUDE AI ANALYSIS
    ============================================ */
 
 function runAnalysis() {
@@ -1107,19 +908,12 @@ function runAnalysis() {
 
   var summary = adsData.map(function(ad) {
     return {
-      name: ad.name,
-      adset: ad.adset,
-      campaign: ad.campaign,
-      spend: ad.spend.toFixed(2),
-      revenue: ad.revenue.toFixed(2),
-      roas: ad.roas.toFixed(2),
-      purchases: ad.purchases,
-      ctr: ad.ctr.toFixed(2),
-      cpc: ad.cpc.toFixed(2),
-      frequency: ad.frequency.toFixed(2),
-      impressions: ad.impressions,
-      status: ad.status,
-      type: ad.creativeType
+      name: ad.name, adset: ad.adset, campaign: ad.campaign,
+      spend: ad.spend.toFixed(2), revenue: ad.revenue.toFixed(2),
+      roas: ad.roas.toFixed(2), purchases: ad.purchases,
+      ctr: ad.ctr.toFixed(2), cpc: ad.cpc.toFixed(2),
+      frequency: ad.frequency.toFixed(2), impressions: ad.impressions,
+      status: ad.status, type: ad.creativeType
     };
   });
 
@@ -1158,12 +952,7 @@ function runAnalysis() {
       alert('שגיאת Claude: ' + (json.error.message || JSON.stringify(json.error)));
       return;
     }
-    var text = '';
-    if (json.content && json.content[0] && json.content[0].text) {
-      text = json.content[0].text;
-    } else {
-      text = 'לא התקבלה תשובה מ-Claude';
-    }
+    var text = (json.content && json.content[0] && json.content[0].text) ? json.content[0].text : 'לא התקבלה תשובה מ-Claude';
     document.getElementById('analysisContent').textContent = text;
     document.getElementById('analysisSection').classList.remove('hidden');
     document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
@@ -1176,7 +965,7 @@ function runAnalysis() {
 }
 
 /* ============================================
-   14. HELPER FUNCTIONS
+   16. HELPER FUNCTIONS
    ============================================ */
 
 function statusBadge(status) {
@@ -1210,18 +999,17 @@ function truncate(s, max) {
 }
 
 /* ============================================
-   15. KEYBOARD SHORTCUTS
+   17. KEYBOARD SHORTCUTS
    ============================================ */
 
 document.addEventListener('keydown', function(e) {
-  /* ESC closes modal */
   if (e.key === 'Escape') {
     document.getElementById('modalOverlay').classList.remove('show');
   }
 });
 
 /* ============================================
-   INIT — run on page load
+   INIT
    ============================================ */
 
 syncPeriods();
