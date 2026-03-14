@@ -231,6 +231,39 @@ a{color:var(--accent);text-decoration:none}
   .modal .modal-stats{grid-template-columns:1fr 1fr}
 }
 
+/* ===== Hierarchy View ===== */
+.hierarchy-wrap{padding:0 24px 24px}
+.h-campaign{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden}
+.h-campaign-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;transition:background .15s;gap:12px}
+.h-campaign-header:hover{background:var(--surface)}
+.h-campaign-header .h-toggle{font-size:14px;color:var(--dim);transition:transform .2s;flex-shrink:0}
+.h-campaign-header.open .h-toggle{transform:rotate(90deg)}
+.h-campaign-title{font-size:15px;font-weight:700;color:var(--text);flex:1}
+.h-campaign-stats{display:flex;gap:16px;flex-shrink:0;flex-wrap:wrap}
+.h-stat{font-size:12px;color:var(--dim)}
+.h-stat b{color:var(--text);font-weight:700}
+.h-stat.h-roas b{color:var(--accent)}
+.h-campaign-body{display:none;border-top:1px solid var(--border)}
+.h-campaign-header.open+.h-campaign-body{display:block}
+.h-adset{border-top:1px solid var(--border)}
+.h-adset:first-child{border-top:none}
+.h-adset-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px 12px 40px;cursor:pointer;transition:background .15s;gap:12px;background:rgba(26,26,46,.5)}
+.h-adset-header:hover{background:var(--surface)}
+.h-adset-header .h-toggle{font-size:12px;color:var(--dim);transition:transform .2s;flex-shrink:0}
+.h-adset-header.open .h-toggle{transform:rotate(90deg)}
+.h-adset-title{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.h-adset-body{display:none}
+.h-adset-header.open+.h-adset-body{display:block}
+.h-ad-row{display:flex;align-items:center;gap:12px;padding:10px 20px 10px 60px;border-top:1px solid rgba(30,30,46,.5);cursor:pointer;transition:background .15s}
+.h-ad-row:hover{background:rgba(0,255,157,.04)}
+.h-ad-thumb{width:40px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:16px}
+.h-ad-thumb img{width:100%;height:100%;object-fit:cover}
+.h-ad-name{flex:1;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-ad-stats{display:flex;gap:14px;flex-shrink:0;flex-wrap:wrap}
+.h-ad-action{flex-shrink:0}
+.h-ad-action span{padding:3px 8px;border-radius:8px;font-size:10px;font-weight:700}
+.h-count{font-size:11px;color:var(--dim);background:var(--surface);padding:2px 8px;border-radius:10px;margin-right:6px}
+
 /* ===== Print / PDF Export ===== */
 @media print {
   body{background:#fff!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -258,6 +291,10 @@ a{color:var(--accent);text-decoration:none}
   .an-body,.an-text,.an-list,.an-list li{color:#000!important}
   .ad-action{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;break-inside:avoid}
   .ad-flags .flag-pill{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+  .h-campaign{border:1px solid #ccc!important;background:#fff!important}
+  .h-campaign-header,.h-adset-header{background:#f5f5f5!important}
+  .h-campaign-title,.h-adset-title,.h-ad-name,.h-stat,.h-stat b{color:#000!important}
+  .h-campaign-body,.h-adset-body{display:block!important}
   .hidden{display:none!important}
 }
 </style>
@@ -303,6 +340,7 @@ a{color:var(--accent);text-decoration:none}
     <button id="btnExpanded" onclick="setView('expanded')">מורחב</button>
     <button id="btnCompact" onclick="setView('compact')">מוקטן</button>
     <button id="btnTable" onclick="setView('table')">טבלה</button>
+    <button id="btnHierarchy" onclick="setView('hierarchy')">🏗️ היררכיה</button>
   </div>
   <div class="sort-bar">
     <label>מיון:</label>
@@ -331,6 +369,7 @@ a{color:var(--accent);text-decoration:none}
   <div class="grid-expanded hidden" id="expandedGrid"></div>
   <div class="grid-compact hidden" id="compactGrid"></div>
   <div class="table-wrap hidden" id="tableWrap"></div>
+  <div class="hierarchy-wrap hidden" id="hierarchyWrap"></div>
   <div class="analysis-section hidden" id="analysisSection">
     <div class="analysis-box">
       <h3>🤖 ניתוח AI</h3>
@@ -1053,6 +1092,124 @@ function renderTable() {
 }
 
 /* ============================================
+   10b. RENDER HIERARCHY VIEW
+   ============================================ */
+
+function renderHierarchy() {
+  var filtered = getFilteredAds();
+  if (filtered.length === 0) {
+    document.getElementById('hierarchyWrap').innerHTML = '<div class="loading">אין נתונים</div>';
+    return;
+  }
+
+  // Build hierarchy: Campaign → AdSet → Ads
+  var campaigns = {};
+  filtered.forEach(function(ad, i) {
+    var cName = ad.campaign || 'ללא קמפיין';
+    var aName = ad.adset || 'ללא אדסט';
+    if (!campaigns[cName]) campaigns[cName] = { adsets: {}, spend: 0, revenue: 0, purchases: 0, impressions: 0 };
+    var c = campaigns[cName];
+    c.spend += ad.spend;
+    c.revenue += ad.revenue;
+    c.purchases += ad.purchases;
+    c.impressions += ad.impressions;
+    if (!c.adsets[aName]) c.adsets[aName] = { ads: [], spend: 0, revenue: 0, purchases: 0, impressions: 0 };
+    var as = c.adsets[aName];
+    as.spend += ad.spend;
+    as.revenue += ad.revenue;
+    as.purchases += ad.purchases;
+    as.impressions += ad.impressions;
+    as.ads.push({ ad: ad, globalIndex: adsData.indexOf(ad) });
+  });
+
+  // Sort campaigns by spend desc
+  var sortedCampaigns = Object.keys(campaigns).sort(function(a, b) {
+    return campaigns[b].spend - campaigns[a].spend;
+  });
+
+  var html = '';
+  sortedCampaigns.forEach(function(cName, ci) {
+    var c = campaigns[cName];
+    var cRoas = c.spend > 0 ? (c.revenue / c.spend).toFixed(2) : '0';
+    var adsetKeys = Object.keys(c.adsets).sort(function(a, b) {
+      return c.adsets[b].spend - c.adsets[a].spend;
+    });
+    var totalAds = 0;
+    adsetKeys.forEach(function(k) { totalAds += c.adsets[k].ads.length; });
+
+    html += '<div class="h-campaign">';
+    html += '<div class="h-campaign-header" onclick="toggleHierarchy(this)">';
+    html += '<span class="h-toggle">▶</span>';
+    html += '<span class="h-campaign-title">' + esc(cName) + '</span>';
+    html += '<span class="h-count">' + adsetKeys.length + ' אדסטים · ' + totalAds + ' מודעות</span>';
+    html += '<div class="h-campaign-stats">';
+    html += '<span class="h-stat">הוצאה: <b>' + formatNIS(c.spend) + '</b></span>';
+    html += '<span class="h-stat">הכנסה: <b>' + formatNIS(c.revenue) + '</b></span>';
+    html += '<span class="h-stat h-roas">ROAS: <b>' + cRoas + '</b></span>';
+    html += '<span class="h-stat">המרות: <b>' + c.purchases + '</b></span>';
+    html += '</div></div>';
+
+    html += '<div class="h-campaign-body">';
+    adsetKeys.forEach(function(aName, ai) {
+      var as = c.adsets[aName];
+      var asRoas = as.spend > 0 ? (as.revenue / as.spend).toFixed(2) : '0';
+
+      html += '<div class="h-adset">';
+      html += '<div class="h-adset-header" onclick="toggleHierarchy(this)">';
+      html += '<span class="h-toggle">▶</span>';
+      html += '<span class="h-adset-title">' + esc(aName) + '</span>';
+      html += '<span class="h-count">' + as.ads.length + ' מודעות</span>';
+      html += '<div class="h-campaign-stats">';
+      html += '<span class="h-stat">הוצאה: <b>' + formatNIS(as.spend) + '</b></span>';
+      html += '<span class="h-stat">הכנסה: <b>' + formatNIS(as.revenue) + '</b></span>';
+      html += '<span class="h-stat h-roas">ROAS: <b>' + asRoas + '</b></span>';
+      html += '<span class="h-stat">המרות: <b>' + as.purchases + '</b></span>';
+      html += '</div></div>';
+
+      html += '<div class="h-adset-body">';
+      as.ads.sort(function(a, b) { return b.ad.spend - a.ad.spend; });
+      as.ads.forEach(function(item) {
+        var ad = item.ad;
+        var idx = item.globalIndex;
+        var thumbHtml = ad.thumbnail
+          ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+          : '&#128444;&#65039;';
+        var actionHtml = '';
+        if (ad.action) {
+          var aCls = '';
+          if (ad.action.cls === 'action-stop') aCls = 'background:rgba(255,77,106,.15);color:var(--red)';
+          else if (ad.action.cls === 'action-scale' || ad.action.cls === 'action-grow') aCls = 'background:rgba(0,255,157,.15);color:var(--green)';
+          else if (ad.action.cls === 'action-refresh') aCls = 'background:rgba(255,215,0,.15);color:var(--yellow)';
+          else if (ad.action.cls === 'action-check') aCls = 'background:rgba(167,139,250,.15);color:var(--purple)';
+          else aCls = 'background:rgba(136,136,136,.1);color:var(--dim)';
+          actionHtml = '<div class="h-ad-action"><span style="' + aCls + '">' + ad.action.icon + ' ' + ad.action.text + '</span></div>';
+        }
+
+        html += '<div class="h-ad-row" onclick="openModal(' + idx + ')">';
+        html += '<div class="h-ad-thumb">' + thumbHtml + '</div>';
+        html += '<div class="h-ad-name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>';
+        html += actionHtml;
+        html += '<div class="h-ad-stats">';
+        html += '<span class="h-stat">הוצאה: <b>' + formatNIS(ad.spend) + '</b></span>';
+        html += '<span class="h-stat h-roas">ROAS: <b>' + ad.roas.toFixed(2) + '</b></span>';
+        html += '<span class="h-stat">המרות: <b>' + ad.purchases + '</b></span>';
+        html += '<span class="h-stat">CTR: <b>' + ad.ctr.toFixed(2) + '%</b></span>';
+        html += '<span class="h-stat">Freq: <b>' + ad.frequency.toFixed(2) + '</b></span>';
+        html += '</div></div>';
+      });
+      html += '</div></div>';
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('hierarchyWrap').innerHTML = html;
+}
+
+function toggleHierarchy(el) {
+  el.classList.toggle('open');
+}
+
+/* ============================================
    11. VIEW TOGGLE
    ============================================ */
 
@@ -1062,12 +1219,15 @@ function setView(view) {
   document.getElementById('btnExpanded').classList.toggle('active', view === 'expanded');
   document.getElementById('btnCompact').classList.toggle('active', view === 'compact');
   document.getElementById('btnTable').classList.toggle('active', view === 'table');
+  document.getElementById('btnHierarchy').classList.toggle('active', view === 'hierarchy');
   document.getElementById('cardsGrid').classList.toggle('hidden', view !== 'cards');
   document.getElementById('expandedGrid').classList.toggle('hidden', view !== 'expanded');
   document.getElementById('compactGrid').classList.toggle('hidden', view !== 'compact');
   document.getElementById('tableWrap').classList.toggle('hidden', view !== 'table');
+  document.getElementById('hierarchyWrap').classList.toggle('hidden', view !== 'hierarchy');
   if (view === 'expanded') renderExpandedCards();
   if (view === 'compact') renderCompactCards();
+  if (view === 'hierarchy') renderHierarchy();
 }
 
 /* ============================================
