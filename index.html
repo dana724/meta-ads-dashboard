@@ -166,6 +166,8 @@ a{color:var(--accent);text-decoration:none}
 /* ===== Analysis ===== */
 .analysis-btn{display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
 .analysis-btn:hover{opacity:.85}
+.export-btn{display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#1a1a2e,#2a2a4e);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.export-btn:hover{opacity:.85;border-color:var(--accent)}
 .analysis-btn:disabled{opacity:.5;cursor:not-allowed}
 .analysis-section{padding:0 24px 24px}
 .analysis-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
@@ -228,6 +230,36 @@ a{color:var(--accent);text-decoration:none}
   .modal{padding:16px}
   .modal .modal-stats{grid-template-columns:1fr 1fr}
 }
+
+/* ===== Print / PDF Export ===== */
+@media print {
+  body{background:#fff!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .login-overlay,.topbar,.view-toggle,.sort-bar,.filter-bar,.analysis-btn,.export-btn,.preview-toggle,.modal-overlay{display:none!important}
+  .main-content{padding:0!important}
+  .metrics{background:#f5f5f5!important;border:1px solid #ddd!important;border-radius:8px!important}
+  .metric{color:#000!important}
+  .metric .value{color:#111!important}
+  .metric .label{color:#666!important}
+  .grid,.grid-expanded,.grid-compact,.table-wrap{gap:8px!important}
+  .card,.expanded-card,.compact-card{background:#fff!important;border:1px solid #ccc!important;color:#000!important;break-inside:avoid;page-break-inside:avoid}
+  .card *,.expanded-card *,.compact-card *{color:#000!important}
+  .card .info .name,.expanded-card .info .name,.compact-name{color:#000!important}
+  .card .info .adset,.expanded-card .info .adset{color:#555!important}
+  .stat span{color:#666!important}
+  .badge-status,.badge-roas,.badge-media,.badge-carousel{font-size:10px!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+  table{border-collapse:collapse!important;width:100%!important}
+  th,td{border:1px solid #ccc!important;padding:6px!important;color:#000!important;font-size:11px!important}
+  th{background:#f0f0f0!important}
+  .analysis-section{break-before:page}
+  .analysis-box{background:#fff!important;border:1px solid #ccc!important;color:#000!important}
+  .analysis-box h3{color:#7c3aed!important}
+  .an-section{background:#f9f9f9!important;border:1px solid #ddd!important;color:#000!important;break-inside:avoid}
+  .an-label{color:#7c3aed!important}
+  .an-body,.an-text,.an-list,.an-list li{color:#000!important}
+  .ad-action{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;break-inside:avoid}
+  .ad-flags .flag-pill{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
+  .hidden{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -265,7 +297,7 @@ a{color:var(--accent);text-decoration:none}
 <!-- ===== MAIN ===== -->
 <div class="main-content hidden" id="mainContent">
   <div class="metrics" id="metricsBar"></div>
-  <div style="padding:0 24px 12px"><button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח AI</button></div>
+  <div style="padding:0 24px 12px;display:flex;gap:10px;align-items:center"><button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח AI</button><button class="export-btn" onclick="exportPDF()">📄 ייצוא PDF</button></div>
   <div class="view-toggle">
     <button class="active" id="btnCards" onclick="setView('cards')">כרטיסים</button>
     <button id="btnExpanded" onclick="setView('expanded')">מורחב</button>
@@ -1247,6 +1279,13 @@ function renderAnalysis(ins, container) {
   }
 
   container.innerHTML = html;
+}
+
+function exportPDF() {
+  var title = 'Meta Ads Dashboard — ' + new Date().toLocaleDateString('he-IL');
+  document.title = title;
+  window.print();
+  setTimeout(function() { document.title = 'Meta Ads Dashboard'; }, 1000);
 }
 
 function runAnalysis() {
