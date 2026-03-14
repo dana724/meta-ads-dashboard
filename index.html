@@ -164,7 +164,7 @@ a{color:var(--accent);text-decoration:none}
 .ad-preview-wrap .pv-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);background:var(--surface);font-size:13px}
 
 /* ===== Analysis ===== */
-.analysis-btn{display:block;margin:0 24px 16px;padding:14px 24px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;width:calc(100% - 48px);transition:opacity .2s}
+.analysis-btn{display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s}
 .analysis-btn:hover{opacity:.85}
 .analysis-btn:disabled{opacity:.5;cursor:not-allowed}
 .analysis-section{padding:0 24px 24px}
@@ -253,6 +253,7 @@ a{color:var(--accent);text-decoration:none}
 <!-- ===== MAIN ===== -->
 <div class="main-content hidden" id="mainContent">
   <div class="metrics" id="metricsBar"></div>
+  <div style="padding:0 24px 12px"><button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח Claude AI</button></div>
   <div class="view-toggle">
     <button class="active" id="btnCards" onclick="setView('cards')">כרטיסים</button>
     <button id="btnExpanded" onclick="setView('expanded')">מורחב</button>
@@ -286,7 +287,6 @@ a{color:var(--accent);text-decoration:none}
   <div class="grid-expanded hidden" id="expandedGrid"></div>
   <div class="grid-compact hidden" id="compactGrid"></div>
   <div class="table-wrap hidden" id="tableWrap"></div>
-  <button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח Claude AI</button>
   <div class="analysis-section hidden" id="analysisSection">
     <div class="analysis-box">
       <h3>🤖 ניתוח Claude AI</h3>
