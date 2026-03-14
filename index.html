@@ -568,6 +568,28 @@ function firstWords(text, count) {
   return words.join(' ');
 }
 
+function extractOpener(ad) {
+  // Use bodyText or headline if available
+  if (ad.bodyText) return ad.bodyText;
+  if (ad.headline) return ad.headline;
+  // Otherwise extract descriptive part from ad name
+  // Pattern: "date → price → ID_num_description_[format]"
+  var parts = ad.name.split('\u2192'); // split on →
+  if (parts.length >= 3) {
+    var tail = parts[parts.length - 1].trim();
+    // Remove leading numeric ID_number_ prefix
+    tail = tail.replace(/^\d+_\d+_/, '');
+    // Remove trailing format brackets like _[Banner, Story]
+    tail = tail.replace(/_\[[^\]]*\]\s*$/, '');
+    // Clean up: replace dashes/underscores with spaces, remove [coupon: ]
+    tail = tail.replace(/\[coupon:\s*\]/gi, '').replace(/[-_]+/g, ' ').trim();
+    // Remove empty brackets
+    tail = tail.replace(/\[\s*\]/g, '').trim();
+    if (tail) return tail;
+  }
+  return '';
+}
+
 /* ============================================
    8. RENDER EXPANDED CARDS (large creative view)
    ============================================ */
@@ -599,7 +621,7 @@ function renderExpandedCards() {
       + carouselBadge
       + '<div class="info">';
 
-    var openerText = firstWords(ad.bodyText || ad.headline || '', 6);
+    var openerText = firstWords(extractOpener(ad), 6);
     if (openerText) {
       html += '<div class="opener" title="' + escAttr(ad.bodyText || ad.headline) + '">' + esc(openerText) + '</div>';
     }
