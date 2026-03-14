@@ -103,8 +103,21 @@ a{color:var(--accent);text-decoration:none}
 .expanded-card .info .opener{font-size:13px;font-weight:800;color:var(--accent);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .expanded-card .info .stats .stat.roas-emphasis{color:var(--accent);font-weight:800}
 
+/* ===== Ad Action Recommendation ===== */
+.ad-action{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;margin-top:8px;font-size:12px;font-weight:700;cursor:default}
+.ad-action .action-icon{font-size:16px}
+.ad-action .action-text{flex:1}
+.ad-action.action-stop{background:rgba(255,77,106,.12);color:var(--red);border:1px solid rgba(255,77,106,.25)}
+.ad-action.action-scale{background:rgba(0,255,157,.12);color:var(--green);border:1px solid rgba(0,255,157,.25)}
+.ad-action.action-grow{background:rgba(0,255,157,.08);color:var(--green);border:1px solid rgba(0,255,157,.15)}
+.ad-action.action-refresh{background:rgba(255,215,0,.1);color:var(--yellow);border:1px solid rgba(255,215,0,.2)}
+.ad-action.action-check{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+.ad-action.action-reduce{background:rgba(255,140,0,.1);color:#ff8c00;border:1px solid rgba(255,140,0,.2)}
+.ad-action.action-wait{background:rgba(136,136,136,.1);color:var(--dim);border:1px solid rgba(136,136,136,.2)}
+.ad-action.action-watch{background:rgba(136,136,136,.08);color:var(--dim);border:1px solid rgba(136,136,136,.15)}
+
 /* ===== Ad Flags (Claude Insights) ===== */
-.ad-flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.ad-flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .ad-flag{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.3px}
 .ad-flag.flag-red{background:rgba(255,77,106,.15);color:var(--red)}
 .ad-flag.flag-yellow{background:rgba(255,215,0,.15);color:var(--yellow)}
@@ -451,16 +464,71 @@ function computeAdFlags() {
     }
 
     ad.flags = flags;
+
+    /* === Action recommendation (one primary action per ad) === */
+    if (ad.spend >= 80 && ad.roas < 1) {
+      ad.action = { icon: '💀', text: 'לעצור מיד', detail: 'הוצאה של ' + formatNIS(ad.spend) + ' עם ROAS ' + ad.roas.toFixed(2) + ' — הפסד', cls: 'action-stop' };
+    } else if (ad.spend >= 50 && ad.roas === 0 && ad.purchases === 0) {
+      ad.action = { icon: '💀', text: 'לעצור מיד', detail: 'אין מכירות כלל עם הוצאה של ' + formatNIS(ad.spend), cls: 'action-stop' };
+    } else if (ad.roas >= 5 && ad.purchases >= 3) {
+      ad.action = { icon: '🏆', text: 'להגדיל תקציב', detail: 'ROAS מטורף של ' + ad.roas.toFixed(2) + ' עם ' + ad.purchases + ' רכישות', cls: 'action-scale' };
+    } else if (ad.roas >= 3 && ad.purchases >= 2) {
+      ad.action = { icon: '📈', text: 'להגדיל תקציב', detail: 'ROAS של ' + ad.roas.toFixed(2) + ' עם ' + ad.purchases + ' רכישות — פוטנציאל', cls: 'action-grow' };
+    } else if (ad.frequency >= 3 && ad.roas >= 2) {
+      ad.action = { icon: '⚠️', text: 'להכין קריאייטיב חדש', detail: 'תדירות ' + ad.frequency.toFixed(1) + ' עם ROAS טוב — להחליף לפני ירידה', cls: 'action-refresh' };
+    } else if (ad.ctr > avgCtr * 1.5 && ad.roas < 1.5 && ad.spend >= 30) {
+      ad.action = { icon: '🔍', text: 'לבדוק דף נחיתה', detail: 'CTR גבוה (' + ad.ctr.toFixed(2) + '%) אבל ROAS נמוך — בעיה בהמרה', cls: 'action-check' };
+    } else if (ad.spend >= 50 && ad.roas >= 1 && ad.roas < 1.5) {
+      ad.action = { icon: '⏸️', text: 'להקטין תקציב', detail: 'ROAS של ' + ad.roas.toFixed(2) + ' — על הגבול, לצמצם', cls: 'action-reduce' };
+    } else if (ad.spend < 30 && ad.roas === 0) {
+      ad.action = { icon: '⏳', text: 'לחכות לנתונים', detail: 'הוצאה נמוכה — עדיין אין מספיק דאטה', cls: 'action-wait' };
+    } else if (ad.roas >= 1.5 && ad.roas < 3) {
+      ad.action = { icon: '👀', text: 'לעקוב', detail: 'ביצועים סבירים — ROAS ' + ad.roas.toFixed(2), cls: 'action-watch' };
+    } else {
+      ad.action = null;
+    }
   });
 }
 
 function renderFlagsHtml(ad) {
-  if (!ad.flags || ad.flags.length === 0) return '';
-  var html = '<div class="ad-flags">';
-  ad.flags.forEach(function(f) {
-    html += '<span class="ad-flag ' + f.cls + '">' + f.label + '</span>';
-  });
-  html += '</div>';
+  var html = '';
+
+  /* Action recommendation */
+  if (ad.action) {
+    html += '<div class="ad-action ' + ad.action.cls + '" title="' + escAttr(ad.action.detail) + '">'
+      + '<span class="action-icon">' + ad.action.icon + '</span>'
+      + '<span class="action-text">' + ad.action.text + '</span>'
+      + '</div>';
+  }
+
+  /* Flags */
+  if (ad.flags && ad.flags.length > 0) {
+    html += '<div class="ad-flags">';
+    ad.flags.forEach(function(f) {
+      html += '<span class="ad-flag ' + f.cls + '">' + f.label + '</span>';
+    });
+    html += '</div>';
+  }
+  return html;
+}
+
+function renderInsightsHtml(ad) {
+  /* Full version for modal — shows action detail text */
+  var html = '';
+  if (ad.action) {
+    html += '<div class="ad-action ' + ad.action.cls + '" style="margin-top:12px;padding:10px 14px;font-size:13px">'
+      + '<span class="action-icon" style="font-size:20px">' + ad.action.icon + '</span>'
+      + '<div style="flex:1"><div class="action-text">' + ad.action.text + '</div>'
+      + '<div style="font-weight:400;font-size:11px;margin-top:2px;opacity:.85">' + esc(ad.action.detail) + '</div>'
+      + '</div></div>';
+  }
+  if (ad.flags && ad.flags.length > 0) {
+    html += '<div class="ad-flags" style="margin-top:8px">';
+    ad.flags.forEach(function(f) {
+      html += '<span class="ad-flag ' + f.cls + '" style="font-size:11px;padding:4px 10px">' + f.label + '</span>';
+    });
+    html += '</div>';
+  }
   return html;
 }
 
@@ -957,7 +1025,7 @@ function openModal(index) {
     + msStat('Reach', ad.reach.toLocaleString())
     + msStat('Frequency', ad.frequency.toFixed(2))
     + '</div>'
-    + renderFlagsHtml(ad)
+    + renderInsightsHtml(ad)
     + '<div class="preview-label">תצוגה מקדימה של המודעה:</div>'
     + '<div class="ad-preview-wrap" id="adPreviewWrap">'
     + '<div class="pv-msg"><span class="spinner"></span>&nbsp; טוען תצוגה מקדימה...</div>'
