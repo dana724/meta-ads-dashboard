@@ -202,8 +202,8 @@ a{color:var(--accent);text-decoration:none}
 .sort-bar select{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:12px;cursor:pointer}
 
 /* ===== Filter Bar ===== */
-.filter-bar{display:flex;gap:6px;padding:0 24px 12px;flex-wrap:wrap;align-items:center}
-.filter-pill{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:11px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.filter-bar{display:flex;gap:8px;padding:0 24px 20px;flex-wrap:wrap;align-items:center}
+.filter-pill{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:14px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
 .filter-pill:hover{border-color:var(--accent);color:var(--text)}
 .filter-pill.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
 .filter-pill.pill-stop.active{background:var(--red);border-color:var(--red)}
@@ -265,7 +265,7 @@ a{color:var(--accent);text-decoration:none}
 <!-- ===== MAIN ===== -->
 <div class="main-content hidden" id="mainContent">
   <div class="metrics" id="metricsBar"></div>
-  <div style="padding:0 24px 12px"><button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח Claude AI</button></div>
+  <div style="padding:0 24px 12px"><button class="analysis-btn" id="analysisBtn" onclick="runAnalysis()">🤖 ניתוח AI</button></div>
   <div class="view-toggle">
     <button class="active" id="btnCards" onclick="setView('cards')">כרטיסים</button>
     <button id="btnExpanded" onclick="setView('expanded')">מורחב</button>
@@ -301,7 +301,7 @@ a{color:var(--accent);text-decoration:none}
   <div class="table-wrap hidden" id="tableWrap"></div>
   <div class="analysis-section hidden" id="analysisSection">
     <div class="analysis-box">
-      <h3>🤖 ניתוח Claude AI</h3>
+      <h3>🤖 ניתוח AI</h3>
       <div class="analysis-content" id="analysisContent"></div>
     </div>
   </div>
@@ -1278,7 +1278,7 @@ function runAnalysis() {
   .then(function(r) { return r.json(); })
   .then(function(json) {
     btn.disabled = false;
-    btn.textContent = '🤖 ניתוח Claude AI';
+    btn.textContent = '🤖 ניתוח AI';
 
     if (json.error) {
       alert('שגיאת ניתוח: ' + (json.error.message || JSON.stringify(json.error)));
@@ -1292,7 +1292,7 @@ function runAnalysis() {
   })
   .catch(function(err) {
     btn.disabled = false;
-    btn.textContent = '🤖 ניתוח Claude AI';
+    btn.textContent = '🤖 ניתוח AI';
     alert('שגיאת רשת: ' + err.message);
   });
 }
