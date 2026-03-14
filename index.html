@@ -100,6 +100,8 @@ a{color:var(--accent);text-decoration:none}
 .expanded-card .info .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .expanded-card .info .stats .stat{font-size:12px}
 .expanded-card .info .stats .stat span{color:var(--dim)}
+.expanded-card .info .opener{font-size:13px;font-weight:800;color:var(--accent);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expanded-card .info .stats .stat.roas-emphasis{color:var(--accent);font-weight:800}
 
 /* ===== Compact Cards Grid ===== */
 .grid-compact{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:0 24px 24px}
@@ -556,8 +558,14 @@ function renderCards() {
   document.getElementById('cardsGrid').innerHTML = html;
 }
 
-function statCell(label, value) {
-  return '<div class="stat"><span>' + label + ': </span>' + value + '</div>';
+function statCell(label, value, cls) {
+  return '<div class="stat' + (cls ? ' ' + cls : '') + '"><span>' + label + ': </span>' + value + '</div>';
+}
+
+function firstWords(text, count) {
+  if (!text) return '';
+  var words = text.trim().split(/\s+/).slice(0, count || 6);
+  return words.join(' ');
 }
 
 /* ============================================
@@ -589,15 +597,21 @@ function renderExpandedCards() {
       + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
       + '<div class="badge-media">' + esc(ad.mediaLabel) + '</div>'
       + carouselBadge
-      + '<div class="info">'
-      + '<div class="name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
+      + '<div class="info">';
+
+    var openerText = firstWords(ad.bodyText || ad.headline || '', 6);
+    if (openerText) {
+      html += '<div class="opener" title="' + escAttr(ad.bodyText || ad.headline) + '">' + esc(openerText) + '</div>';
+    }
+
+    html += '<div class="name" title="' + escAttr(ad.name) + '">' + esc(ad.name) + '</div>'
       + headlineHtml
       + bodyHtml
       + '<div class="adset" title="' + escAttr(ad.adset) + '">' + esc(ad.adset) + '</div>'
       + '<div class="stats">'
       + statCell('הוצאה', formatNIS(ad.spend))
       + statCell('הכנסה', formatNIS(ad.revenue))
-      + statCell('ROAS', ad.roas.toFixed(2))
+      + statCell('ROAS', ad.roas.toFixed(2), 'roas-emphasis')
       + statCell('CTR', ad.ctr.toFixed(2) + '%')
       + statCell('המרות', String(ad.purchases))
       + statCell('Freq', ad.frequency.toFixed(2))
