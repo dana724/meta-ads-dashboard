@@ -189,6 +189,22 @@ a{color:var(--accent);text-decoration:none}
 .sort-bar label{font-size:12px;color:var(--dim)}
 .sort-bar select{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:12px;cursor:pointer}
 
+/* ===== Filter Bar ===== */
+.filter-bar{display:flex;gap:6px;padding:0 24px 12px;flex-wrap:wrap;align-items:center}
+.filter-pill{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:11px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.filter-pill:hover{border-color:var(--accent);color:var(--text)}
+.filter-pill.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
+.filter-pill.pill-stop.active{background:var(--red);border-color:var(--red)}
+.filter-pill.pill-scale.active{background:var(--green);border-color:var(--green)}
+.filter-pill.pill-grow.active{background:var(--green);border-color:var(--green);opacity:.8}
+.filter-pill.pill-refresh.active{background:var(--yellow);color:#000;border-color:var(--yellow)}
+.filter-pill.pill-check.active{background:var(--purple);border-color:var(--purple)}
+.filter-pill.pill-reduce.active{background:#ff8c00;border-color:#ff8c00}
+.filter-pill.pill-wait.active{background:#666;border-color:#666;color:#fff}
+.filter-pill.pill-watch.active{background:#888;border-color:#888;color:#fff}
+.filter-pill.pill-flagged.active{background:#ff6b6b;border-color:#ff6b6b}
+.filter-count{font-size:10px;margin-right:2px;opacity:.8}
+
 /* ===== Responsive ===== */
 @media(max-width:600px){
   .metrics{grid-template-columns:1fr 1fr}
@@ -254,6 +270,18 @@ a{color:var(--accent);text-decoration:none}
       <option value="ctr_desc">CTR (גבוה→נמוך)</option>
     </select>
   </div>
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-pill active" data-filter="all" onclick="setFilter('all')">הכל</button>
+    <button class="filter-pill pill-stop" data-filter="action-stop" onclick="setFilter('action-stop')">💀 לעצור מיד</button>
+    <button class="filter-pill pill-scale" data-filter="action-scale" onclick="setFilter('action-scale')">🏆 להגדיל (מנצח)</button>
+    <button class="filter-pill pill-grow" data-filter="action-grow" onclick="setFilter('action-grow')">📈 להגדיל תקציב</button>
+    <button class="filter-pill pill-refresh" data-filter="action-refresh" onclick="setFilter('action-refresh')">⚠️ להחליף קריאייטיב</button>
+    <button class="filter-pill pill-check" data-filter="action-check" onclick="setFilter('action-check')">🔍 לבדוק דף נחיתה</button>
+    <button class="filter-pill pill-reduce" data-filter="action-reduce" onclick="setFilter('action-reduce')">⏸️ להקטין תקציב</button>
+    <button class="filter-pill pill-wait" data-filter="action-wait" onclick="setFilter('action-wait')">⏳ לחכות לנתונים</button>
+    <button class="filter-pill pill-watch" data-filter="action-watch" onclick="setFilter('action-watch')">👀 לעקוב</button>
+    <button class="filter-pill pill-flagged" data-filter="has-flags" onclick="setFilter('has-flags')">🚩 יש דגלים</button>
+  </div>
   <div class="grid" id="cardsGrid"></div>
   <div class="grid-expanded hidden" id="expandedGrid"></div>
   <div class="grid-compact hidden" id="compactGrid"></div>
@@ -302,6 +330,7 @@ a{color:var(--accent);text-decoration:none}
 var WORKER_URL = 'https://meta-ads-worker.dana-a77.workers.dev';
 var adsData = [];
 var currentView = 'cards';
+var activeFilter = 'all';
 
 /* ============================================
    1. AUTH — hardcoded users, 7-day localStorage session
@@ -570,6 +599,7 @@ function fetchData() {
 
     adsData = ads.map(enrichAd);
     computeAdFlags();
+    updateFilterCounts();
     applySort();
     fetchThumbnails();
   })
@@ -620,6 +650,50 @@ function fetchThumbnails() {
    5. SORT
    ============================================ */
 
+function setFilter(filter) {
+  activeFilter = filter;
+  /* Update pill UI */
+  var pills = document.querySelectorAll('.filter-pill');
+  for (var i = 0; i < pills.length; i++) {
+    pills[i].classList.toggle('active', pills[i].getAttribute('data-filter') === filter);
+  }
+  applySort();
+  updateFilterCounts();
+}
+
+function getFilteredAds() {
+  if (activeFilter === 'all') return adsData;
+  if (activeFilter === 'has-flags') {
+    return adsData.filter(function(ad) { return ad.flags && ad.flags.length > 0; });
+  }
+  return adsData.filter(function(ad) {
+    return ad.action && ad.action.cls === activeFilter;
+  });
+}
+
+function updateFilterCounts() {
+  var counts = { 'all': adsData.length, 'has-flags': 0 };
+  var actionTypes = ['action-stop','action-scale','action-grow','action-refresh','action-check','action-reduce','action-wait','action-watch'];
+  actionTypes.forEach(function(t) { counts[t] = 0; });
+  adsData.forEach(function(ad) {
+    if (ad.flags && ad.flags.length > 0) counts['has-flags']++;
+    if (ad.action) counts[ad.action.cls] = (counts[ad.action.cls] || 0) + 1;
+  });
+  var pills = document.querySelectorAll('.filter-pill');
+  for (var i = 0; i < pills.length; i++) {
+    var f = pills[i].getAttribute('data-filter');
+    var c = counts[f] || 0;
+    var existing = pills[i].querySelector('.filter-count');
+    if (existing) existing.remove();
+    if (c > 0 || f === 'all') {
+      var span = document.createElement('span');
+      span.className = 'filter-count';
+      span.textContent = ' (' + c + ')';
+      pills[i].appendChild(span);
+    }
+  }
+}
+
 function applySort() {
   var val = document.getElementById('sortSelect').value;
   var parts = val.split('_');
@@ -644,17 +718,19 @@ function applySort() {
    ============================================ */
 
 function renderMetrics() {
+  var filtered = getFilteredAds();
   var totalSpend = 0, totalRevenue = 0, totalPurchases = 0;
-  adsData.forEach(function(ad) {
+  filtered.forEach(function(ad) {
     totalSpend += ad.spend; totalRevenue += ad.revenue; totalPurchases += ad.purchases;
   });
   var totalRoas = totalSpend > 0 ? (totalRevenue / totalSpend).toFixed(2) : '0';
+  var countLabel = activeFilter === 'all' ? filtered.length.toString() : filtered.length + '/' + adsData.length;
   document.getElementById('metricsBar').innerHTML =
     metricBox('הוצאה כוללת', formatNIS(totalSpend))
     + metricBox('הכנסה כוללת', formatNIS(totalRevenue))
     + metricBox('ROAS כולל', totalRoas + 'x')
     + metricBox('רכישות', totalPurchases.toLocaleString())
-    + metricBox('קריאייטיבים', adsData.length.toString());
+    + metricBox('קריאייטיבים', countLabel);
 }
 
 function metricBox(label, value) {
@@ -666,12 +742,14 @@ function metricBox(label, value) {
    ============================================ */
 
 function renderCards() {
-  if (adsData.length === 0) {
-    document.getElementById('cardsGrid').innerHTML = '<div class="loading">אין נתונים</div>';
+  var filtered = getFilteredAds();
+  if (filtered.length === 0) {
+    document.getElementById('cardsGrid').innerHTML = '<div class="loading">' + (activeFilter === 'all' ? 'אין נתונים' : 'אין מודעות בקטגוריה זו') + '</div>';
     return;
   }
   var html = '';
-  adsData.forEach(function(ad, i) {
+  filtered.forEach(function(ad) {
+    var i = adsData.indexOf(ad);
     var sb = statusBadge(ad.status);
     var thumbHtml = ad.thumbnail
       ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
@@ -741,12 +819,14 @@ function extractOpener(ad) {
    ============================================ */
 
 function renderExpandedCards() {
-  if (adsData.length === 0) {
-    document.getElementById('expandedGrid').innerHTML = '<div class="loading">אין נתונים</div>';
+  var filtered = getFilteredAds();
+  if (filtered.length === 0) {
+    document.getElementById('expandedGrid').innerHTML = '<div class="loading">' + (activeFilter === 'all' ? 'אין נתונים' : 'אין מודעות בקטגוריה זו') + '</div>';
     return;
   }
   var html = '';
-  adsData.forEach(function(ad, i) {
+  filtered.forEach(function(ad) {
+    var i = adsData.indexOf(ad);
     var sb = statusBadge(ad.status);
     var thumbHtml = ad.thumbnail
       ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
@@ -859,12 +939,14 @@ function renderExpandedCards() {
    ============================================ */
 
 function renderCompactCards() {
-  if (adsData.length === 0) {
-    document.getElementById('compactGrid').innerHTML = '<div class="loading">אין נתונים</div>';
+  var filtered = getFilteredAds();
+  if (filtered.length === 0) {
+    document.getElementById('compactGrid').innerHTML = '<div class="loading">' + (activeFilter === 'all' ? 'אין נתונים' : 'אין מודעות בקטגוריה זו') + '</div>';
     return;
   }
   var html = '';
-  adsData.forEach(function(ad, i) {
+  filtered.forEach(function(ad) {
+    var i = adsData.indexOf(ad);
     var sb = statusBadge(ad.status);
     var thumbHtml = ad.thumbnail
       ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
@@ -890,17 +972,20 @@ function renderCompactCards() {
    ============================================ */
 
 function renderTable() {
+  var filtered = getFilteredAds();
   var html = '<table><thead><tr>'
     + '<th></th><th>קריאייטיב</th><th>סוג</th><th>אדסט</th>'
     + '<th>הוצאה</th><th>הכנסה</th><th>ROAS</th><th>CTR</th><th>CPC</th>'
-    + '<th>Freq</th><th>המרות</th><th>סטטוס</th>'
+    + '<th>Freq</th><th>המרות</th><th>סטטוס</th><th>פעולה</th>'
     + '</tr></thead><tbody>';
 
-  adsData.forEach(function(ad, i) {
+  filtered.forEach(function(ad) {
+    var i = adsData.indexOf(ad);
     var sb = statusBadge(ad.status);
     var thumbHtml = ad.thumbnail
       ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
       : '&#128444;&#65039;';
+    var actionCell = ad.action ? (ad.action.icon + ' ' + ad.action.text) : '';
 
     html += '<tr onclick="openModal(' + i + ')" style="cursor:pointer">'
       + '<td><div class="thumb-cell">' + thumbHtml + '</div></td>'
@@ -915,6 +1000,7 @@ function renderTable() {
       + '<td>' + ad.frequency.toFixed(2) + '</td>'
       + '<td>' + ad.purchases + '</td>'
       + '<td><span class="badge-status ' + sb.cls + '" style="position:static">' + sb.label + '</span></td>'
+      + '<td style="font-size:11px;font-weight:600">' + actionCell + '</td>'
       + '</tr>';
   });
 
