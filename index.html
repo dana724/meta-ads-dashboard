@@ -171,6 +171,18 @@ a{color:var(--accent);text-decoration:none}
 .analysis-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
 .analysis-box h3{color:var(--accent);margin-bottom:12px}
 .analysis-box .analysis-content{white-space:pre-wrap;line-height:1.8;font-size:14px}
+.an-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.an-summary{border-color:rgba(0,255,157,.3)}
+.an-label{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px}
+.an-body{font-size:14px;line-height:1.7;color:var(--text)}
+.an-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.an-tag{flex-shrink:0;padding:3px 8px;border-radius:8px;font-size:11px;font-weight:700;margin-top:2px}
+.an-text{font-size:13px;line-height:1.6;color:var(--text)}
+.an-green{background:rgba(0,255,157,.15);color:var(--green)}
+.an-red{background:rgba(255,77,106,.15);color:var(--red)}
+.an-yellow{background:rgba(255,215,0,.15);color:var(--yellow)}
+.an-purple{background:rgba(167,139,250,.15);color:var(--purple)}
+.an-list{margin-right:18px;font-size:13px;line-height:1.8;color:var(--text)}
 
 /* ===== Loading ===== */
 .loading{text-align:center;padding:60px;color:var(--dim);font-size:16px}
@@ -1166,6 +1178,77 @@ function msStat(label, value) {
    14. CLAUDE AI ANALYSIS — via Worker /api/insights
    ============================================ */
 
+function renderAnalysis(ins, container) {
+  if (!ins || ins.raw_text) {
+    container.textContent = ins ? ins.raw_text : '';
+    return;
+  }
+  var html = '';
+
+  // Summary
+  if (ins.summary_he) {
+    html += '<div class="an-section an-summary"><div class="an-label">📊 סיכום אסטרטגי</div><div class="an-body">' + esc(ins.summary_he) + '</div></div>';
+  }
+
+  // Creative patterns
+  if (ins.creative_patterns) {
+    var cp = ins.creative_patterns;
+    html += '<div class="an-section"><div class="an-label">🎨 ניתוח קריאייטיב</div>';
+    if (cp.winning_patterns) html += '<div class="an-row"><span class="an-tag an-green">✅ מה עובד</span><span class="an-text">' + esc(cp.winning_patterns) + '</span></div>';
+    if (cp.losing_patterns) html += '<div class="an-row"><span class="an-tag an-red">❌ מה לא עובד</span><span class="an-text">' + esc(cp.losing_patterns) + '</span></div>';
+    if (cp.next_creative_recommendation) html += '<div class="an-row"><span class="an-tag an-purple">💡 הקריאייטיב הבא</span><span class="an-text">' + esc(cp.next_creative_recommendation) + '</span></div>';
+    html += '</div>';
+  }
+
+  // Audience insights
+  if (ins.audience_insights) {
+    var ai = ins.audience_insights;
+    html += '<div class="an-section"><div class="an-label">👥 תובנות קהלים</div>';
+    if (ai.what_works) html += '<div class="an-row"><span class="an-tag an-green">✅ מה עובד</span><span class="an-text">' + esc(ai.what_works) + '</span></div>';
+    if (ai.fatigue_signals) html += '<div class="an-row"><span class="an-tag an-yellow">⚠️ סימני עייפות</span><span class="an-text">' + esc(ai.fatigue_signals) + '</span></div>';
+    if (ai.recommendations) html += '<div class="an-row"><span class="an-tag an-purple">💡 המלצות</span><span class="an-text">' + esc(ai.recommendations) + '</span></div>';
+    html += '</div>';
+  }
+
+  // Budget efficiency
+  if (ins.budget_efficiency) {
+    var be = ins.budget_efficiency;
+    html += '<div class="an-section"><div class="an-label">💰 יעילות תקציב</div>';
+    if (be.overspend) html += '<div class="an-row"><span class="an-tag an-red">🔻 להקטין</span><span class="an-text">' + esc(be.overspend) + '</span></div>';
+    if (be.underspend) html += '<div class="an-row"><span class="an-tag an-green">🚀 להגדיל</span><span class="an-text">' + esc(be.underspend) + '</span></div>';
+    html += '</div>';
+  }
+
+  // Top winners
+  if (ins.top_winners && ins.top_winners.length) {
+    html += '<div class="an-section"><div class="an-label">🏆 מנצחים</div>';
+    ins.top_winners.forEach(function(w) {
+      html += '<div class="an-row"><span class="an-tag an-green">WIN</span><span class="an-text"><b>' + esc(w.ad_name) + '</b> — ' + esc(w.why) + '</span></div>';
+    });
+    html += '</div>';
+  }
+
+  // Stop immediately
+  if (ins.stop_immediately && ins.stop_immediately.length) {
+    html += '<div class="an-section"><div class="an-label">💀 לעצור מיד</div>';
+    ins.stop_immediately.forEach(function(s) {
+      html += '<div class="an-row"><span class="an-tag an-red">STOP</span><span class="an-text"><b>' + esc(s.ad_name) + '</b> — ' + esc(s.why) + '</span></div>';
+    });
+    html += '</div>';
+  }
+
+  // Action items
+  if (ins.action_items && ins.action_items.length) {
+    html += '<div class="an-section"><div class="an-label">🎯 פעולות מיידיות</div><ol class="an-list">';
+    ins.action_items.forEach(function(a) {
+      html += '<li>' + esc(a) + '</li>';
+    });
+    html += '</ol></div>';
+  }
+
+  container.innerHTML = html;
+}
+
 function runAnalysis() {
   if (adsData.length === 0) {
     alert('אין נתונים לנתח. טעני נתונים קודם.');
@@ -1203,52 +1286,7 @@ function runAnalysis() {
     }
 
     var insights = json.insights || {};
-    var text = '';
-
-    if (insights.raw_text) {
-      text = insights.raw_text;
-    } else {
-      if (insights.summary_he) text += insights.summary_he + '\n\n';
-
-      if (insights.top_winners && insights.top_winners.length) {
-        text += '🏆 קריאייטיבים מנצחים:\n';
-        insights.top_winners.forEach(function(w) { text += '  • ' + w.ad_name + ' — ' + w.why + '\n'; });
-        text += '\n';
-      }
-      if (insights.stop_immediately && insights.stop_immediately.length) {
-        text += '💀 לעצור מיד:\n';
-        insights.stop_immediately.forEach(function(s) { text += '  • ' + s.ad_name + ' — ' + s.why + '\n'; });
-        text += '\n';
-      }
-      if (insights.creative_fatigue && insights.creative_fatigue.length) {
-        text += '⚠️ Creative Fatigue:\n';
-        insights.creative_fatigue.forEach(function(f) { text += '  • ' + f.ad_name + ' — ' + f.reason + ' → ' + f.action + '\n'; });
-        text += '\n';
-      }
-      if (insights.scale_opportunities && insights.scale_opportunities.length) {
-        text += '📈 הזדמנויות להגדלה:\n';
-        insights.scale_opportunities.forEach(function(s) { text += '  • ' + s.ad_name + ' — ' + s.reason + '\n'; });
-        text += '\n';
-      }
-      if (insights.audience_overlap && insights.audience_overlap.length) {
-        text += '👥 חפיפת קהלים:\n';
-        insights.audience_overlap.forEach(function(o) { text += '  • ' + o.adsets.join(', ') + ' — ' + o.recommendation + '\n'; });
-        text += '\n';
-      }
-      if (insights.daypart_recommendations && insights.daypart_recommendations.length) {
-        text += '🕐 המלצות Dayparting:\n';
-        insights.daypart_recommendations.forEach(function(d) { text += '  • שעות מומלצות: ' + d.best_hours + ' | להימנע: ' + d.worst_hours + '\n    ' + d.recommendation + '\n'; });
-        text += '\n';
-      }
-      if (insights.action_items && insights.action_items.length) {
-        text += '🎯 פעולות מיידיות:\n';
-        insights.action_items.forEach(function(a, idx) { text += '  ' + (idx + 1) + '. ' + a + '\n'; });
-      }
-
-      if (!text) text = JSON.stringify(insights, null, 2);
-    }
-
-    document.getElementById('analysisContent').textContent = text;
+    renderAnalysis(insights, document.getElementById('analysisContent'));
     document.getElementById('analysisSection').classList.remove('hidden');
     document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
   })
