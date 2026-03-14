@@ -23,6 +23,19 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
 a{color:var(--accent);text-decoration:none}
 .hidden{display:none!important}
 
+/* ===== Login ===== */
+.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:92%;max-width:400px;text-align:center}
+.login-box h1{color:var(--accent);margin-bottom:8px;font-size:24px}
+.login-box .sub{color:var(--dim);margin-bottom:24px;font-size:14px}
+.login-box input{width:100%;padding:12px 16px;margin-bottom:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;direction:ltr;text-align:left}
+.login-box input::placeholder{color:#555}
+.login-box button{width:100%;padding:12px;background:var(--accent);color:#000;border:none;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.login-box button:hover{opacity:.85}
+.login-box .login-error{color:var(--red);font-size:13px;margin-top:12px;display:none}
+.logout-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(255,77,106,.3);background:transparent;color:var(--red);font-size:12px;cursor:pointer;transition:opacity .2s}
+.logout-btn:hover{opacity:.7}
+
 /* ===== Top Bar ===== */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
 .topbar h1{font-size:20px;color:var(--accent)}
@@ -169,8 +182,20 @@ a{color:var(--accent);text-decoration:none}
 </head>
 <body>
 
+<!-- ===== LOGIN ===== -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h1>Meta Ads Dashboard</h1>
+    <div class="sub">התחברו כדי לצפות בנתונים</div>
+    <input type="email" id="inputEmail" placeholder="אימייל" autocomplete="email">
+    <input type="password" id="inputPassword" placeholder="סיסמה" autocomplete="current-password">
+    <button onclick="doLogin()">התחבר</button>
+    <div class="login-error" id="loginError">אימייל או סיסמה שגויים</div>
+  </div>
+</div>
+
 <!-- ===== TOP BAR ===== -->
-<div class="topbar" id="topbar">
+<div class="topbar hidden" id="topbar">
   <h1>Meta Ads Dashboard</h1>
   <div class="topbar-actions">
     <select id="periodSelect">
@@ -183,11 +208,12 @@ a{color:var(--accent);text-decoration:none}
       <option value="last_month">חודש קודם</option>
     </select>
     <button class="primary" onclick="fetchData()">טען נתונים</button>
+    <button class="logout-btn" onclick="doLogout()">התנתק</button>
   </div>
 </div>
 
 <!-- ===== MAIN ===== -->
-<div class="main-content" id="mainContent">
+<div class="main-content hidden" id="mainContent">
   <div class="metrics" id="metricsBar"></div>
   <div class="view-toggle">
     <button class="active" id="btnCards" onclick="setView('cards')">כרטיסים</button>
@@ -228,7 +254,7 @@ a{color:var(--accent);text-decoration:none}
 </div>
 
 <!-- ===== BOTTOM BAR ===== -->
-<div class="bottombar" id="bottomBar">
+<div class="bottombar hidden" id="bottomBar">
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <select id="periodSelectBottom">
       <option value="today">היום</option>
@@ -254,6 +280,76 @@ a{color:var(--accent);text-decoration:none}
 var WORKER_URL = 'https://meta-ads-worker.dana-a77.workers.dev';
 var adsData = [];
 var currentView = 'cards';
+
+/* ============================================
+   1. AUTH — hardcoded users, 7-day localStorage session
+   ============================================ */
+
+var USERS = [
+  { emailHash: 'b5e76b4815987b7315d979d8127c2908cc14361687306943d34fc7c3dd367815', passHash: '19b4baa06c2f5e4828a813c67f3cb51b0b72d2dc370af59fb2e8bf566695de83' },
+  { emailHash: '32c28883978686f99da9a32be1ffc9eb138c0cb889ac930e2e370d1f9358c817', passHash: '23182ab802e7bd2cdd773702e141c72658ecdae50f6d5412aa6717803c2b5b17' }
+];
+var SESSION_KEY = 'meta_dash_session';
+var SESSION_DAYS = 7;
+
+async function sha256(str) {
+  var buf = new TextEncoder().encode(str);
+  var hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+async function doLogin() {
+  var email = document.getElementById('inputEmail').value.trim().toLowerCase();
+  var pass = document.getElementById('inputPassword').value;
+  var errEl = document.getElementById('loginError');
+
+  var eHash = await sha256(email);
+  var pHash = await sha256(pass);
+  var match = USERS.find(function(u) {
+    return u.emailHash === eHash && u.passHash === pHash;
+  });
+
+  if (!match) {
+    errEl.style.display = 'block';
+    return;
+  }
+
+  errEl.style.display = 'none';
+  var session = { user: eHash, expires: Date.now() + SESSION_DAYS * 86400000 };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  showApp();
+  fetchData();
+}
+
+function doLogout() {
+  localStorage.removeItem(SESSION_KEY);
+  adsData = [];
+  document.getElementById('loginOverlay').style.display = '';
+  document.getElementById('topbar').classList.add('hidden');
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('bottomBar').classList.add('hidden');
+  document.getElementById('analysisSection').classList.add('hidden');
+  document.getElementById('inputEmail').value = '';
+  document.getElementById('inputPassword').value = '';
+}
+
+function showApp() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('topbar').classList.remove('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('bottomBar').classList.remove('hidden');
+}
+
+function checkSession() {
+  try {
+    var raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
+    var session = JSON.parse(raw);
+    if (session.expires > Date.now()) return true;
+    localStorage.removeItem(SESSION_KEY);
+  } catch(e) { localStorage.removeItem(SESSION_KEY); }
+  return false;
+}
 
 /* ============================================
    2. SYNC PERIOD SELECTORS
@@ -827,7 +923,12 @@ document.addEventListener('keydown', function(e) {
    ============================================ */
 
 syncPeriods();
-fetchData();
+if (checkSession()) { showApp(); fetchData(); }
+
+/* Enter key on password field */
+document.getElementById('inputPassword').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
 
 </script>
 </body>
