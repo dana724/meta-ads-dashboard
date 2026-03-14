@@ -408,9 +408,14 @@ function fetchData() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ date_preset: period })
   })
-  .then(function(r) { return r.json(); })
+  .then(function(r) {
+    if (!r.ok) throw new Error('Worker returned HTTP ' + r.status);
+    return r.json();
+  })
   .then(function(json) {
-    if (json.error) throw new Error(json.error);
+    if (json.ok === false || json.error) {
+      throw new Error(typeof json.error === 'string' ? json.error : JSON.stringify(json.error));
+    }
 
     var ads = json.ads || [];
     if (ads.length === 0) {
@@ -420,9 +425,48 @@ function fetchData() {
 
     adsData = ads.map(enrichAd);
     applySort();
+    fetchThumbnails();
   })
   .catch(function(err) {
-    document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאה: ' + esc(err.message || String(err)) + '</div>';
+    document.getElementById('cardsGrid').innerHTML = '<div class="loading" style="color:var(--red)">שגיאה בטעינת נתונים: ' + esc(err.message || String(err)) + '<br><br><button onclick="fetchData()" style="padding:8px 16px;background:var(--accent);color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:700">נסה שוב</button></div>';
+  });
+}
+
+/* ============================================
+   4b. FETCH THUMBNAILS — lightweight second step
+   ============================================ */
+
+function fetchThumbnails() {
+  if (adsData.length === 0) return;
+
+  var adIds = adsData.map(function(ad) { return ad.id; });
+
+  fetch(WORKER_URL + '/api/thumbnails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ad_ids: adIds })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(json) {
+    if (!json.ok || !json.thumbnails) return;
+
+    var changed = false;
+    adsData.forEach(function(ad) {
+      if (json.thumbnails[ad.id]) {
+        ad.thumbnail = json.thumbnails[ad.id];
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      renderCards();
+      if (currentView === 'expanded') renderExpandedCards();
+      if (currentView === 'compact') renderCompactCards();
+      renderTable();
+    }
+  })
+  .catch(function() {
+    // Silently fail — cards still work with placeholder
   });
 }
 
