@@ -103,6 +103,13 @@ a{color:var(--accent);text-decoration:none}
 .expanded-card .info .opener{font-size:13px;font-weight:800;color:var(--accent);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .expanded-card .info .stats .stat.roas-emphasis{color:var(--accent);font-weight:800}
 
+/* ===== Ad Flags (Claude Insights) ===== */
+.ad-flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.ad-flag{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.ad-flag.flag-red{background:rgba(255,77,106,.15);color:var(--red)}
+.ad-flag.flag-yellow{background:rgba(255,215,0,.15);color:var(--yellow)}
+.ad-flag.flag-orange{background:rgba(255,140,0,.15);color:#ff8c00}
+
 /* ===== Compact Cards Grid ===== */
 .grid-compact{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:0 24px 24px}
 .compact-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;position:relative}
@@ -390,6 +397,74 @@ function enrichAd(ad) {
 }
 
 /* ============================================
+   3b. AD FLAGS (Claude Insights)
+   ============================================ */
+
+function computeAdFlags() {
+  if (adsData.length === 0) return;
+
+  /* Compute account averages for relative thresholds */
+  var totalCpc = 0, totalCtr = 0, totalRoas = 0, count = 0;
+  adsData.forEach(function(ad) {
+    if (ad.spend > 10) {
+      totalCpc += ad.cpc;
+      totalCtr += ad.ctr;
+      totalRoas += ad.roas;
+      count++;
+    }
+  });
+  var avgCpc = count > 0 ? totalCpc / count : 5;
+  var avgCtr = count > 0 ? totalCtr / count : 1.5;
+  var avgRoas = count > 0 ? totalRoas / count : 2;
+
+  adsData.forEach(function(ad) {
+    var flags = [];
+
+    /* High Frequency — frequency >= 3 */
+    if (ad.frequency >= 3) {
+      flags.push({ label: '⚡ High Frequency', cls: 'flag-orange' });
+    }
+
+    /* CTR Drop — CTR below 50% of account average (with meaningful spend) */
+    if (ad.spend > 20 && ad.ctr < avgCtr * 0.5) {
+      flags.push({ label: '📉 CTR Drop', cls: 'flag-yellow' });
+    }
+
+    /* CPC Rising — CPC above 150% of account average */
+    if (ad.spend > 20 && ad.cpc > avgCpc * 1.5) {
+      flags.push({ label: '💸 CPC Rising', cls: 'flag-yellow' });
+    }
+
+    /* ROAS Decay — ROAS dropping below 1.5 with real spend */
+    if (ad.spend >= 50 && ad.roas > 0 && ad.roas < 1.5) {
+      flags.push({ label: '📊 ROAS Decay', cls: 'flag-orange' });
+    }
+
+    /* Spend With No Efficiency — high spend, ROAS below 1 */
+    if (ad.spend >= 80 && ad.roas < 1) {
+      flags.push({ label: '🔥 Spend No ROI', cls: 'flag-red' });
+    }
+
+    /* Likely Fatigued — high frequency + below-average CTR */
+    if (ad.frequency >= 2.5 && ad.ctr < avgCtr * 0.7 && ad.spend > 30) {
+      flags.push({ label: '😴 Likely Fatigued', cls: 'flag-red' });
+    }
+
+    ad.flags = flags;
+  });
+}
+
+function renderFlagsHtml(ad) {
+  if (!ad.flags || ad.flags.length === 0) return '';
+  var html = '<div class="ad-flags">';
+  ad.flags.forEach(function(f) {
+    html += '<span class="ad-flag ' + f.cls + '">' + f.label + '</span>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/* ============================================
    4. FETCH DATA — via Worker /api/ads
    ============================================ */
 
@@ -426,6 +501,7 @@ function fetchData() {
     }
 
     adsData = ads.map(enrichAd);
+    computeAdFlags();
     applySort();
     fetchThumbnails();
   })
@@ -553,7 +629,9 @@ function renderCards() {
       + statCell('CTR', ad.ctr.toFixed(2) + '%')
       + statCell('המרות', String(ad.purchases))
       + statCell('Freq', ad.frequency.toFixed(2))
-      + '</div></div></div>';
+      + '</div>'
+      + renderFlagsHtml(ad)
+      + '</div></div>';
   });
   document.getElementById('cardsGrid').innerHTML = html;
 }
@@ -637,7 +715,9 @@ function renderExpandedCards() {
       + statCell('CTR', ad.ctr.toFixed(2) + '%')
       + statCell('המרות', String(ad.purchases))
       + statCell('Freq', ad.frequency.toFixed(2))
-      + '</div></div></div>';
+      + '</div>'
+      + renderFlagsHtml(ad)
+      + '</div></div>';
   });
   document.getElementById('expandedGrid').innerHTML = html;
 
@@ -877,6 +957,7 @@ function openModal(index) {
     + msStat('Reach', ad.reach.toLocaleString())
     + msStat('Frequency', ad.frequency.toFixed(2))
     + '</div>'
+    + renderFlagsHtml(ad)
     + '<div class="preview-label">תצוגה מקדימה של המודעה:</div>'
     + '<div class="ad-preview-wrap" id="adPreviewWrap">'
     + '<div class="pv-msg"><span class="spinner"></span>&nbsp; טוען תצוגה מקדימה...</div>'
