@@ -522,7 +522,6 @@ function enrichAd(ad) {
   ad.previewBody = '';
   ad.previewLoaded = false;
   ad.previewState = 'asset';
-  ad.previewLocked = false;
 
   if (!ad.creativeType) ad.creativeType = 'unknown';
   if (ad.creativeType === 'carousel') ad.mediaLabel = 'Carousel';
@@ -984,17 +983,9 @@ function renderExpandedCards() {
   filtered.forEach(function(ad) {
     var i = adsData.indexOf(ad);
     var sb = statusBadge(ad.status);
-    var thumbHtml;
-    var btnLabel;
-    if (ad.previewLocked && ad.previewBody) {
-      thumbHtml = previewIframe(ad, 'pointer-events:auto');
-      btnLabel = '&#128274; Asset';
-    } else {
-      thumbHtml = ad.thumbnail
-        ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
-        : '&#128444;&#65039;';
-      btnLabel = '&#128065; Preview';
-    }
+    var thumbHtml = ad.thumbnail
+      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      : '&#128444;&#65039;';
     var carouselBadge = (ad.creativeType === 'carousel' && ad.carouselCount > 0)
       ? '<div class="badge-carousel">&#127904; x' + ad.carouselCount + '</div>' : '';
     var headlineHtml = ad.headline
@@ -1004,7 +995,7 @@ function renderExpandedCards() {
 
     html += '<div class="expanded-card" onclick="openModal(' + i + ')">'
       + '<div class="thumb" id="exp-thumb-' + i + '">' + thumbHtml + '</div>'
-      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ',\'exp-thumb-' + i + '\')">' + btnLabel + '</button>'
+      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ',\'exp-thumb-' + i + '\')">&#128065; Preview</button>'
       + '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>'
       + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
       + '<div class="badge-media">' + esc(ad.mediaLabel) + '</div>'
@@ -1257,24 +1248,20 @@ function togglePreview(event, index, thumbId) {
   var thumb = document.getElementById(thumbId);
   var btn = event.currentTarget;
 
-  /* If currently showing locked preview → unlock and revert to asset */
-  if (ad.previewLocked) {
+  if (ad.previewState === 'preview') {
     thumb.innerHTML = ad.thumbnail
       ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy">'
       : '&#128444;&#65039;';
     ad.previewState = 'asset';
-    ad.previewLocked = false;
     btn.innerHTML = '&#128065; Preview';
     return;
   }
 
-  /* If preview already cached → lock it in place (clickable iframe) */
   if (ad.previewBody) {
-    showPreviewInThumb(thumb, ad, btn, true);
+    showPreviewInThumb(thumb, ad, btn);
     return;
   }
 
-  /* Fetch preview from API, then lock */
   thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim)"><span class="spinner"></span></div>';
 
   fetch(WORKER_URL + '/api/preview', {
@@ -1287,7 +1274,7 @@ function togglePreview(event, index, thumbId) {
     if (json.body) {
       ad.previewBody = json.body;
       ad.previewLoaded = true;
-      showPreviewInThumb(thumb, ad, btn, true);
+      showPreviewInThumb(thumb, ad, btn);
     } else {
       thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim);font-size:12px">Preview לא זמין</div>';
     }
@@ -1297,25 +1284,10 @@ function togglePreview(event, index, thumbId) {
   });
 }
 
-function extractPreviewSrc(html) {
-  var m = html.match(/src=["']([^"']+)["']/);
-  return m ? m[1].replace(/&amp;/g, '&') : '';
-}
-
-function previewIframe(ad, pointerStyle) {
-  var src = extractPreviewSrc(ad.previewBody);
-  if (src) {
-    return '<iframe src="' + escAttr(src) + '" style="width:100%;height:100%;border:none;' + pointerStyle + '"></iframe>';
-  }
-  return '<iframe srcdoc="' + escAttr(ad.previewBody) + '" style="width:100%;height:100%;border:none;' + pointerStyle + '"></iframe>';
-}
-
-function showPreviewInThumb(thumb, ad, btn, locked) {
-  var pointerStyle = locked ? 'pointer-events:auto' : 'pointer-events:none';
-  thumb.innerHTML = previewIframe(ad, pointerStyle);
+function showPreviewInThumb(thumb, ad, btn) {
+  thumb.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '" style="width:100%;height:100%;border:none;pointer-events:none"></iframe>';
   ad.previewState = 'preview';
-  ad.previewLocked = !!locked;
-  btn.innerHTML = locked ? '&#128274; Asset' : '&#128444;&#65039; Asset';
+  btn.innerHTML = '&#128444;&#65039; Asset';
 }
 
 /* ============================================
@@ -1359,7 +1331,7 @@ function openModal(index) {
 function loadAdPreview(ad) {
   if (ad.previewBody) {
     var wrap = document.getElementById('adPreviewWrap');
-    if (wrap) wrap.innerHTML = previewIframe(ad, '');
+    if (wrap) wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>';
     return;
   }
 
@@ -1378,7 +1350,7 @@ function loadAdPreview(ad) {
     }
     ad.previewBody = json.body;
     ad.previewLoaded = true;
-    wrap.innerHTML = previewIframe(ad, '');
+    wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>';
   })
   .catch(function() {
     var wrap = document.getElementById('adPreviewWrap');
