@@ -522,6 +522,7 @@ function enrichAd(ad) {
   ad.previewBody = '';
   ad.previewLoaded = false;
   ad.previewState = 'asset';
+  ad.previewLocked = false;
 
   if (!ad.creativeType) ad.creativeType = 'unknown';
   if (ad.creativeType === 'carousel') ad.mediaLabel = 'Carousel';
@@ -982,6 +983,9 @@ function renderExpandedCards() {
   var html = '';
   filtered.forEach(function(ad) {
     var i = adsData.indexOf(ad);
+    /* Reset preview state on re-render so locked previews don't persist */
+    ad.previewState = 'asset';
+    ad.previewLocked = false;
     var sb = statusBadge(ad.status);
     var thumbHtml = ad.thumbnail
       ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
