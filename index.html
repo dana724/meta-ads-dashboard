@@ -203,6 +203,14 @@ a{color:var(--accent);text-decoration:none}
 .sort-bar label{font-size:12px;color:var(--dim)}
 .sort-bar select{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:12px;cursor:pointer}
 
+/* ===== Search Bar ===== */
+.search-bar{display:flex;gap:10px;padding:0 24px 12px;flex-wrap:wrap;align-items:center}
+.search-bar input{flex:1;min-width:200px;padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;transition:border-color .15s}
+.search-bar input:focus{outline:none;border-color:var(--accent)}
+.search-bar input::placeholder{color:var(--dim)}
+.search-bar select{padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;cursor:pointer;min-width:200px}
+.search-bar select:focus{outline:none;border-color:var(--accent)}
+
 /* ===== Filter Bar ===== */
 .filter-bar{display:flex;gap:8px;padding:0 24px 20px;flex-wrap:wrap;align-items:center}
 .filter-pill{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:14px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
@@ -267,7 +275,7 @@ a{color:var(--accent);text-decoration:none}
 /* ===== Print / PDF Export ===== */
 @media print {
   body{background:#fff!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .login-overlay,.topbar,.view-toggle,.sort-bar,.filter-bar,.analysis-btn,.export-btn,.preview-toggle,.modal-overlay{display:none!important}
+  .login-overlay,.topbar,.view-toggle,.sort-bar,.search-bar,.filter-bar,.analysis-btn,.export-btn,.preview-toggle,.modal-overlay{display:none!important}
   .main-content{padding:0!important}
   .metrics{background:#f5f5f5!important;border:1px solid #ddd!important;border-radius:8px!important}
   .metric{color:#000!important}
@@ -353,6 +361,12 @@ a{color:var(--accent);text-decoration:none}
       <option value="ctr_desc">CTR (גבוה→נמוך)</option>
     </select>
   </div>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="🔍 חיפוש חופשי — שם מודעה, מספר, אדסט..." oninput="onSearchInput()">
+    <select id="campaignSelect" onchange="onCampaignFilter()">
+      <option value="">כל הקמפיינים</option>
+    </select>
+  </div>
   <div class="filter-bar" id="filterBar">
     <button class="filter-pill active" data-filter="all" onclick="setFilter('all')">הכל</button>
     <button class="filter-pill pill-stop" data-filter="action-stop" onclick="setFilter('action-stop')">💀 לעצור מיד</button>
@@ -414,6 +428,8 @@ var WORKER_URL = 'https://meta-ads-worker.dana-a77.workers.dev';
 var adsData = [];
 var currentView = 'cards';
 var activeFilter = 'all';
+var searchText = '';
+var campaignFilter = '';
 
 /* ============================================
    1. AUTH — hardcoded users, 7-day localStorage session
@@ -681,7 +697,11 @@ function fetchData() {
     }
 
     adsData = ads.map(enrichAd);
+    searchText = '';
+    campaignFilter = '';
+    document.getElementById('searchInput').value = '';
     computeAdFlags();
+    populateCampaignSelect();
     updateFilterCounts();
     applySort();
     fetchThumbnails();
@@ -745,13 +765,65 @@ function setFilter(filter) {
 }
 
 function getFilteredAds() {
-  if (activeFilter === 'all') return adsData;
+  var result = adsData;
+
+  /* Action/flag filter */
   if (activeFilter === 'has-flags') {
-    return adsData.filter(function(ad) { return ad.flags && ad.flags.length > 0; });
+    result = result.filter(function(ad) { return ad.flags && ad.flags.length > 0; });
+  } else if (activeFilter !== 'all') {
+    result = result.filter(function(ad) { return ad.action && ad.action.cls === activeFilter; });
   }
-  return adsData.filter(function(ad) {
-    return ad.action && ad.action.cls === activeFilter;
+
+  /* Campaign filter */
+  if (campaignFilter) {
+    result = result.filter(function(ad) { return ad.campaign === campaignFilter; });
+  }
+
+  /* Free text search */
+  if (searchText) {
+    var q = searchText.toLowerCase();
+    result = result.filter(function(ad) {
+      return (ad.name && ad.name.toLowerCase().indexOf(q) !== -1)
+        || (ad.id && ad.id.indexOf(q) !== -1)
+        || (ad.adset && ad.adset.toLowerCase().indexOf(q) !== -1)
+        || (ad.campaign && ad.campaign.toLowerCase().indexOf(q) !== -1);
+    });
+  }
+
+  return result;
+}
+
+function onSearchInput() {
+  searchText = document.getElementById('searchInput').value.trim();
+  refreshViews();
+}
+
+function onCampaignFilter() {
+  campaignFilter = document.getElementById('campaignSelect').value;
+  refreshViews();
+}
+
+function refreshViews() {
+  renderMetrics();
+  renderCards();
+  if (currentView === 'expanded') renderExpandedCards();
+  if (currentView === 'compact') renderCompactCards();
+  if (currentView === 'hierarchy') renderHierarchy();
+  renderTable();
+}
+
+function populateCampaignSelect() {
+  var select = document.getElementById('campaignSelect');
+  var campaigns = {};
+  adsData.forEach(function(ad) {
+    if (ad.campaign) campaigns[ad.campaign] = (campaigns[ad.campaign] || 0) + 1;
   });
+  var sorted = Object.keys(campaigns).sort(function(a, b) { return campaigns[b] - campaigns[a]; });
+  var html = '<option value="">כל הקמפיינים (' + adsData.length + ')</option>';
+  sorted.forEach(function(c) {
+    html += '<option value="' + escAttr(c) + '">' + esc(c) + ' (' + campaigns[c] + ')</option>';
+  });
+  select.innerHTML = html;
 }
 
 function updateFilterCounts() {
