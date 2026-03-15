@@ -983,13 +983,18 @@ function renderExpandedCards() {
   var html = '';
   filtered.forEach(function(ad) {
     var i = adsData.indexOf(ad);
-    /* Reset preview state on re-render so locked previews don't persist */
-    ad.previewState = 'asset';
-    ad.previewLocked = false;
     var sb = statusBadge(ad.status);
-    var thumbHtml = ad.thumbnail
-      ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
-      : '&#128444;&#65039;';
+    var thumbHtml;
+    var btnLabel;
+    if (ad.previewLocked && ad.previewBody) {
+      thumbHtml = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '" style="width:100%;height:100%;border:none;pointer-events:auto"></iframe>';
+      btnLabel = '&#128274; Asset';
+    } else {
+      thumbHtml = ad.thumbnail
+        ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+        : '&#128444;&#65039;';
+      btnLabel = '&#128065; Preview';
+    }
     var carouselBadge = (ad.creativeType === 'carousel' && ad.carouselCount > 0)
       ? '<div class="badge-carousel">&#127904; x' + ad.carouselCount + '</div>' : '';
     var headlineHtml = ad.headline
@@ -999,7 +1004,7 @@ function renderExpandedCards() {
 
     html += '<div class="expanded-card" onclick="openModal(' + i + ')">'
       + '<div class="thumb" id="exp-thumb-' + i + '">' + thumbHtml + '</div>'
-      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ',\'exp-thumb-' + i + '\')">&#128065; Preview</button>'
+      + '<button class="preview-toggle" onclick="togglePreview(event,' + i + ',\'exp-thumb-' + i + '\')">' + btnLabel + '</button>'
       + '<div class="badge-status ' + sb.cls + '">' + sb.label + '</div>'
       + '<div class="badge-roas">ROAS ' + ad.roas.toFixed(2) + '</div>'
       + '<div class="badge-media">' + esc(ad.mediaLabel) + '</div>'
