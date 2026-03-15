@@ -987,7 +987,7 @@ function renderExpandedCards() {
     var thumbHtml;
     var btnLabel;
     if (ad.previewLocked && ad.previewBody) {
-      thumbHtml = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '" style="width:100%;height:100%;border:none;pointer-events:auto"></iframe>';
+      thumbHtml = previewIframe(ad, 'pointer-events:auto');
       btnLabel = '&#128274; Asset';
     } else {
       thumbHtml = ad.thumbnail
@@ -1032,70 +1032,6 @@ function renderExpandedCards() {
       + '</div></div>';
   });
   document.getElementById('expandedGrid').innerHTML = html;
-
-  /* Attach hover-preview to each expanded card thumb */
-  adsData.forEach(function(ad, i) {
-    var card = document.querySelector('#exp-thumb-' + i);
-    if (!card) return;
-    var parentCard = card.closest('.expanded-card');
-    if (!parentCard) return;
-    var hoverTimer = null;
-
-    parentCard.addEventListener('mouseenter', function() {
-      /* Don't hover-preview if already locked via click */
-      if (ad.previewLocked) return;
-      hoverTimer = setTimeout(function() {
-        var thumb = document.getElementById('exp-thumb-' + i);
-        if (!thumb || ad.previewState === 'preview') return;
-
-        if (ad.previewBody) {
-          thumb.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '" style="width:100%;height:100%;border:none;pointer-events:none"></iframe>';
-          ad.previewState = 'preview';
-          var btn = parentCard.querySelector('.preview-toggle');
-          if (btn) btn.innerHTML = '&#128444;&#65039; Asset';
-          return;
-        }
-
-        thumb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim)"><span class="spinner"></span></div>';
-
-        fetch(WORKER_URL + '/api/preview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ad_id: ad.id })
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(json) {
-          if (json.body) {
-            ad.previewBody = json.body;
-            ad.previewLoaded = true;
-            ad.previewState = 'preview';
-            var t = document.getElementById('exp-thumb-' + i);
-            if (t) t.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(json.body) + '" style="width:100%;height:100%;border:none;pointer-events:none"></iframe>';
-            var btn = parentCard.querySelector('.preview-toggle');
-            if (btn) btn.innerHTML = '&#128444;&#65039; Asset';
-          }
-        })
-        .catch(function() {});
-      }, 300);
-    });
-
-    parentCard.addEventListener('mouseleave', function() {
-      if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
-      /* Don't revert if preview is locked via click */
-      if (ad.previewLocked) return;
-      if (ad.previewState === 'preview') {
-        var thumb = document.getElementById('exp-thumb-' + i);
-        if (thumb) {
-          thumb.innerHTML = ad.thumbnail
-            ? '<img src="' + escAttr(ad.thumbnail) + '" alt="" loading="lazy">'
-            : '&#128444;&#65039;';
-        }
-        ad.previewState = 'asset';
-        var btn = parentCard.querySelector('.preview-toggle');
-        if (btn) btn.innerHTML = '&#128065; Preview';
-      }
-    });
-  });
 }
 
 /* ============================================
@@ -1361,9 +1297,22 @@ function togglePreview(event, index, thumbId) {
   });
 }
 
+function extractPreviewSrc(html) {
+  var m = html.match(/src=["']([^"']+)["']/);
+  return m ? m[1].replace(/&amp;/g, '&') : '';
+}
+
+function previewIframe(ad, pointerStyle) {
+  var src = extractPreviewSrc(ad.previewBody);
+  if (src) {
+    return '<iframe src="' + escAttr(src) + '" style="width:100%;height:100%;border:none;' + pointerStyle + '"></iframe>';
+  }
+  return '<iframe srcdoc="' + escAttr(ad.previewBody) + '" style="width:100%;height:100%;border:none;' + pointerStyle + '"></iframe>';
+}
+
 function showPreviewInThumb(thumb, ad, btn, locked) {
   var pointerStyle = locked ? 'pointer-events:auto' : 'pointer-events:none';
-  thumb.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '" style="width:100%;height:100%;border:none;' + pointerStyle + '"></iframe>';
+  thumb.innerHTML = previewIframe(ad, pointerStyle);
   ad.previewState = 'preview';
   ad.previewLocked = !!locked;
   btn.innerHTML = locked ? '&#128274; Asset' : '&#128444;&#65039; Asset';
@@ -1410,7 +1359,7 @@ function openModal(index) {
 function loadAdPreview(ad) {
   if (ad.previewBody) {
     var wrap = document.getElementById('adPreviewWrap');
-    if (wrap) wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>';
+    if (wrap) wrap.innerHTML = previewIframe(ad, '');
     return;
   }
 
@@ -1429,7 +1378,7 @@ function loadAdPreview(ad) {
     }
     ad.previewBody = json.body;
     ad.previewLoaded = true;
-    wrap.innerHTML = '<iframe sandbox="allow-scripts allow-same-origin" srcdoc="' + escAttr(ad.previewBody) + '"></iframe>';
+    wrap.innerHTML = previewIframe(ad, '');
   })
   .catch(function() {
     var wrap = document.getElementById('adPreviewWrap');
